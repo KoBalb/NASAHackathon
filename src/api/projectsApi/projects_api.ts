@@ -16,7 +16,7 @@ export async function createProject(
 }
 
 // один проект (GET)
-export async function getProject(id: number): Promise<Project> {
+export async function getProjectById(id: number): Promise<Project> {
   const res = await api.get(`/projects/${id}/`);
   return res.data;
 }
