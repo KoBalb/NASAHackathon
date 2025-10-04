@@ -6,47 +6,37 @@
   align-items: center;
   padding-inline: 7em;
   padding-top: 0.5em;
-  margin: 0;
   color: white;
   border-bottom: 3px solid rgb(68, 68, 70);
   font-family: Arial;
+  margin-bottom: 2em;
 }
 
 .logo {
   font-size: 22px;
   font-weight: bold;
+  height: 1em;
+  padding: 1em;
 }
 
 .nav {
   font-size: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 2em;
+  gap: 2em; 
   align-items: center;
-  
+  margin: 0;
+  padding: 0;
 }
 
 .nav a {
   color: white;
   transition: 0.3s;
+  text-decoration: none;
 }
 
 .nav a:hover {
   color: rgb(147, 115, 177);
 }
 
-.login-btn {
-  padding-inline: 40px;
-  border: 1px solid white;
-  background: transparent;
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.login-btn:hover {
-  background: rgb(147, 115, 177);
-}
 

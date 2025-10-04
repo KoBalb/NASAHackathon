@@ -18,7 +18,7 @@ export function MainRoutes(){
         <Router basename={ import.meta.env.VITE_BASENAME }>
             <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route path="/registration" element={<Registration />} />
+                <Route path="/register" element={<Registration />} />
                  <Route path="/logout" element={<Logout />} />
                 <Route path="/catalogs" element={
                     <ProtectedRoute>

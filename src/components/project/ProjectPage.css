@@ -1,0 +1,89 @@
+html,
+body {
+  background-color: #1d1e2a;
+}
+
+.project__content_main {
+  display: flex;
+  height: 100%;
+}
+
+.project__content_container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main__content {
+  flex: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main__content {
+  flex: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.zoom-toolbar {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.zoom-wrapper {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.grid__container {
+  display: grid;
+  grid-template-columns: repeat(4, 140px);
+  grid-auto-rows: 140px;
+  gap: 16px;
+  padding: 20px;
+  background-color: transparent;
+}
+
+.grid__cell {
+  border: 2px solid #fff;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d221d;
+  color: #fff;
+}
+
+.grid__empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 24px;
+}
+
+.project__back_btn {
+  color: #fff;
+  font-size: 18px;
+  padding: 5px 30px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+}
