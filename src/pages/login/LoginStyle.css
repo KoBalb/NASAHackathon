@@ -1,0 +1,141 @@
+.login-page {
+  min-height: 100vh;
+  background-image: url("../../components/images/registrationBackground.png");
+  background-size: cover;             
+  background-position: center;        
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: row wrap;
+}
+
+.login-form {
+  flex: 1;
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  min-width: 400px;
+  max-width: 800px; 
+  height: 400px;
+  background: linear-gradient(
+  180deg,
+  rgba(0, 0, 0, 0.425),
+  rgba(12, 16, 54, 0.5),
+  rgba(0, 30, 112, 0.425),
+  rgba(29, 14, 231, 0.425),
+  rgba(11, 15, 255, 0.514)
+  );
+  border-radius: 30px;
+  padding-top: 20px;
+}
+
+.login-form h2 {
+  font-family: "Monterchi-Sans";
+  font-size: 20pt;
+  color: white;
+  margin-top: 0.5em;
+}
+
+.login-form input {
+  width: 100%;
+  max-width: 600px;
+  min-width: 200px; 
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.582);
+  background: rgba(71, 71, 71, 0.774);
+  color: white;
+  font-size: 14pt;
+  outline: none;
+  transition: border 0.3s ease;
+}
+.login-form input:hover {
+    border-color: rgb(80, 90, 226);
+}
+.login-form input:focus {
+    border-color: rgb(80, 90, 226);
+}
+
+/* Контейнер для заголовка та картинок */
+.title-container {
+  position: relative; 
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1em;
+}
+
+.title-container h1 {
+  font-family: "Monterchi-Sans";
+  font-size: 30pt;
+  color: white;
+  margin: 0.5em 0;
+  position: relative;
+  z-index: 2; 
+}
+
+.nova-icon-img,
+.stars-img {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1; 
+  opacity: 0.8; 
+  pointer-events: none; 
+}
+
+.nova-icon-img {
+  left: -200px; 
+  height: 100px;
+}
+
+.stars-img {
+  right: -200px; 
+  height: 70px;
+}
+
+/* Контейнер для кнопок */
+.button-container {
+    display: flex;
+    flex-flow: row flex;
+    width: 100%;
+    padding-top: 3em;
+    align-items: center;
+    justify-content: center;
+    gap: 150px;
+}
+.button-cancel {
+    border: 2px solid white;
+    border-radius: 5px;
+    color: white;
+    font-family: "Monterchi-Sans";
+    font-size: 20pt;
+    background-color: transparent;
+    width: 8em;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.button-cancel:hover {
+    transform: scale(1.1);
+}
+
+.button-login {
+    border: 0;
+    border-radius: 5px;
+    color: white;
+    font-family: "Monterchi-Sans";
+    font-size: 20pt;
+    background: linear-gradient(
+    90deg,
+    rgba(16, 31, 16, 0.5),
+    rgba(15, 58, 15, 0.5),
+    rgba(84, 101, 248, 0.527)
+    );
+    width: 8em;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.button-login:hover {
+    transform: scale(1.1);
+}

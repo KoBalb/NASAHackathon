@@ -5,6 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 
+import "./LoginStyle.css";
+import starsIcon from "../../components/images/starsIcon.png";
+import iconNOVA from "../../components/images/iconNOVA.png";
+
 type LoginForm = { username: string; password: string };
 
 export default function Login() {
@@ -36,10 +40,31 @@ export default function Login() {
   const onSubmit = (data: LoginForm) => mutation.mutate(data);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register("username")} placeholder="username" />
-      <input {...register("password")} type="password" placeholder="Password" />
-      <button type="submit">Login</button>
-    </form>
+      <div className="login-page">
+        <form onSubmit={handleSubmit(onSubmit)} className="login-form">
+
+          <div className="title-container">
+            <img src={iconNOVA} alt="NOVA icon" className="nova-icon-img"/>
+            <h1>Вхід</h1>
+            <img src={starsIcon} alt="stars icon" className="stars-img"/>
+          </div>
+
+          <h2>Логін</h2>
+          <input {...register("username")}/>
+
+          <h2>Пароль</h2>
+          <input {...register("password")} type="password" />
+
+          <div className="button-container">
+            <button className="button-cancel">
+              Реєстрація
+            </button>
+            <button type="submit" className="button-login">
+              Увійти
+            </button>
+          </div>
+    
+        </form>
+    </div>
   );
 }
