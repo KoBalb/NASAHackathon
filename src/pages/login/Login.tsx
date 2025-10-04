@@ -3,6 +3,7 @@ import { Auth } from "../../AuthContext";
 import api from "../../api/api";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 type LoginForm = { username: string; password: string };
 
@@ -24,6 +25,13 @@ export default function Login() {
       alert("Invalid email or password");
     },
   });
+
+  const token = localStorage.getItem("token"); 
+  useEffect(() => {
+    if (token) {
+      navigate("/"); 
+    }
+  }, [token, navigate]);
 
   const onSubmit = (data: LoginForm) => mutation.mutate(data);
 

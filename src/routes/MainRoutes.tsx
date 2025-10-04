@@ -11,6 +11,7 @@ import Modules from "../pages/projects/project/modules/Modules";
 import Compartments from "../pages/projects/project/modules/compartments/Compartments";
 import Zones from "../pages/projects/project/modules/compartments/zones/Zones";
 import Project from "../pages/projects/project/project";
+import Logout from "../pages/logout/logout";
 
 export function MainRoutes(){
     return (
@@ -18,6 +19,7 @@ export function MainRoutes(){
             <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/registration" element={<Registration />} />
+                 <Route path="/logout" element={<Logout />} />
                 <Route path="/catalogs" element={
                     <ProtectedRoute>
                         <Catalogs />
