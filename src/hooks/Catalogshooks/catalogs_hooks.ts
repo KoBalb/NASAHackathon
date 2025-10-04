@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Catalog } from "../types";
-import { createCatalog, deleteCatalog, getCatalogById, getCatalogs, updateCatalog } from "../api/catalogsApi/catalogs_api";
+import type { Catalog } from "../../types";
+import { createCatalog, deleteCatalog, getCatalogById, getCatalogs, updateCatalog } from "../../api/catalogsApi/catalogs_api";
 
 export const useCatalogsQuery = () =>
   useQuery<Catalog[], Error>({
@@ -42,3 +42,5 @@ export const useDeleteCatalog = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["catalogs"]}),
   });
 };
+
+
