@@ -1,0 +1,76 @@
+import { useDraggable } from "@dnd-kit/core";
+import GridItem from "../GridItem/GridItem.tsx";
+
+import SearchIcon from "../../../assets/icons/search_icon.svg";
+import "./Catalog.css";
+
+type CatalogItemProps = {
+  id: string;
+  label: string;
+};
+
+type CatalogProps = {
+  items: string[];
+  onItemRemove: (id: string) => void;
+};
+
+function CatalogItem({ label }: CatalogItemProps) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: label,
+  });
+
+  const style = {
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
+    cursor: "grab",
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      <GridItem label={label} />
+    </div>
+  );
+}
+
+export default function Catalog({ items }: CatalogProps) {
+  return (
+    <div className="catalog__container">
+      <div className="catalog__filter_systems_container">
+        <button className="catalog__filter_system_btn">Внутрішні системи</button>
+        <button className="catalog__filter_system_btn">Зовнішні системи</button>
+      </div>
+      <div className="catalog__catalog_container">
+        <p className="catalog__catalog_text">Каталог</p>
+        <button className="catalog__catalog_tags_btn">Теги</button>
+      </div>
+      <div className="catalog__main_container">
+        <div className="catalog__main_input_wrapper">
+          <div className="catalog__main_input_container">
+            <button className="catalog__main_input_icon_btn">
+              <img
+                className="catalog__main_input_icon"
+                src={SearchIcon}
+                alt="Search icon"
+              />
+            </button>
+            <input
+              className="catalog__main_input"
+              type="text"
+              placeholder="Пошук..."
+            />
+          </div>
+        </div>
+        <div className="catalog__main_grid">
+          {items.map((label, idx) => (
+            <CatalogItem
+              key={idx}
+              id={`catalog-${idx}`}
+              label={label}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

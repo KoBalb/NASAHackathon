@@ -1,0 +1,33 @@
+.grid__container {
+  display: grid;
+  grid-template-columns: repeat(4, 140px);
+  grid-auto-rows: 140px;
+  gap: 16px;
+  padding: 20px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  background-color: #fafafa;
+}
+
+.grid__container:empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.grid__placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.grid__item {
+  background-color: #1d221d;
+  border: 2px solid #fff;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}

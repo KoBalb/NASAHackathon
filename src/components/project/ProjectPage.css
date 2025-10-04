@@ -1,0 +1,22 @@
+html,
+body {
+  background-color: #1d1e2a;
+}
+
+.project__content_main {
+  display: flex;
+  height: 100%;
+}
+
+.project__content_container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main__content {
+  flex: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
