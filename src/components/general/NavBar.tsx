@@ -1,10 +1,9 @@
 import "./NavBarStyle.css";
+import LoginButton from "./LoginButton";
 import { NavLink } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 
 function NavigationBar() {
 
-  const navigate = useNavigate();
 
   return (
     <div className="header">
@@ -22,7 +21,7 @@ function NavigationBar() {
         <NavLink to="/astronauts">
           Космонавти
         </NavLink>
-        <button onClick={() => navigate("/login")} className="login-btn">Вхід</button>
+        <LoginButton />
       </nav>
     </div>
   );

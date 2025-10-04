@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, } from "react";
+import { createContext, useContext, useState, type ReactNode, } from "react";
 import api from "./api/api";
 
 type AuthContextType = {
@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   const logout = async () => {
-    await api.post("/logout/"); 
+    await api.post("user/logout/"); 
     localStorage.removeItem("token");
     setToken(null);
   };
