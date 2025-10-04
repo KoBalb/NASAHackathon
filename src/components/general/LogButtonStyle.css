@@ -1,0 +1,38 @@
+/* Стилі кнопки Входу/Виходу */
+.login-btn {
+  padding-inline: 2em;
+  padding-block: 0.3em;
+  border: 1px solid white;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 20px;
+  font-weight: bold;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.login-btn button {
+  padding-inline: 0em;
+  padding-block: 0em;
+  border: 0px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: none;
+  font-size: 20px;
+  font-weight: bold;
+  transition: none;
+}
+
+.login-btn:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.login-btn a {
+    z-index: 10;
+    text-decoration: none;
+}
+.login-btn a:hover {
+    color: white;
+}

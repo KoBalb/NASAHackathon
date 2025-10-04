@@ -16,7 +16,7 @@ function Home() {
                 <Header>Як це працює?</Header>
                 <div className="des-card-container">
                     <DesriptionCard head="Конструюй" text="створи форму корабля у 2D-редакторі"></DesriptionCard>
-                    <DesriptionCard head="Конструюй" text="створи форму корабля у 2D-редакторі"></DesriptionCard>
+                    <DesriptionCard head="Розраховуй" text="перевір ресурси, екіпаж та умови життя"></DesriptionCard>
                     <DesriptionCard head="Запускай" text="дізнайся, чи готовий твій дім до подорожі"></DesriptionCard>
                 </div>
                 <Header>Навіщо це?</Header>
