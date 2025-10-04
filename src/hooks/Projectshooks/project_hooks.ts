@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "../types";
-import { createProject, deleteProject, getProjectById, getProjects, updateProject } from "../api/projectsApi/projects_api";
+import type { Project } from "../../types";
+import { createProject, deleteProject, getProjectById, getProjects, updateProject } from "../../api/projectsApi/projects_api";
 
 
 // список
