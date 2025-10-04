@@ -4,7 +4,7 @@ import "./ProjecrCardsStyles.css";
 import projectIcon from "../../images/project_icon.png";
 import CreateProjectModal from "../../modalform/modal";
 import { deleteProject } from "../../../api/projectsApi/projects_api";
-
+import { useNavigate } from "react-router-dom";
 
 type CardProps = {
   date: string;
@@ -14,7 +14,16 @@ type CardProps = {
 
 function ProjectCard({ date, children, project }: CardProps) {
   const [modalOpen, setModalOpen] = useState(false);
+
+  const navigate = useNavigate();
+  
   const queryClient = useQueryClient();
+
+  const goToProject = () => {
+    if (project?.id) {
+      navigate(`/projects/${project.id}`);
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -33,7 +42,11 @@ function ProjectCard({ date, children, project }: CardProps) {
   return (
     <>
       <div className="prjct-card">
-        <div className="card-image">
+        <div
+          className="card-image"
+          onClick={goToProject}
+          style={{ cursor: "pointer" }}
+        >
           <img
             src={
               project?.preview

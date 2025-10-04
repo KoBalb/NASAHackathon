@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProject, updateProject } from "../../api/projectsApi/projects_api";
 import { updateProjectSettings } from "../../api/settingsApi/settings_api";
 import "./modal.css";
-import ReactDOM from "react-dom";
 
 interface CreateProjectModalProps {
   onClose: () => void;
@@ -29,34 +29,25 @@ const CreateProjectModal = ({ onClose, existingProject }: CreateProjectModalProp
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      if (data.teg_id) formData.append("teg", data.teg_id);
+
+      // добавляем новое фото только если выбрано
+      if (data.preview && data.preview[0]) {
+        formData.append("preview", data.preview[0]);
+      }
+
       let project;
+      if (existingProject) {
+        project = await updateProject(existingProject.id, formData);
+        console.log("Проект обновлён:", project);
+      } else {
+        project = await createProject(formData as any);
+        console.log("Создан проект:", project);
+      }
 
-  if (existingProject) {
-  const formData = new FormData();
-  formData.append("name", data.name);
-  formData.append("description", data.description);
-  if (data.teg_id) formData.append("teg", data.teg_id);
-  if (data.preview && data.preview[0]) {
-  formData.append("preview", data.preview[0]); // <-- новая картинка
-  }
-
-  project = await updateProject(existingProject.id, formData);
-  console.log("Проект обновлён:", project);
-  } else {
-  // создание нового проекта
-  const formData = new FormData();
-  formData.append("name", data.name);
-  formData.append("description", data.description);
-  if (data.teg_id) formData.append("teg", data.teg_id);
-if (data.preview && data.preview[0]) {
-  formData.append("preview", data.preview[0]); // новое фото
-} else if (existingProject?.preview) {
-  formData.append("preview_url", existingProject.preview); // старое фото, сервер должен поддерживать такое поле
-}
-
-  project = await createProject(formData as any);
-  console.log("Создан проект:", project);
-  }
       // обновляем настройки проекта
       const settingsData = {
         recursive_water: data.recursive_water || 0,
@@ -69,11 +60,12 @@ if (data.preview && data.preview[0]) {
       return project;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["projects"]); // обновляем список проектов
+      queryClient.invalidateQueries(["projects"]);
       onClose();
     },
     onError: (error) => {
       console.error("Ошибка при сохранении проекта или настроек:", error);
+      alert("Ошибка при сохранении проекта или настроек");
     },
   });
 
@@ -84,7 +76,7 @@ if (data.preview && data.preview[0]) {
     if (file) setPreview(URL.createObjectURL(file));
   };
 
-return ReactDOM.createPortal(
+  return ReactDOM.createPortal(
     <div className="modal-overlay">
       <div className="modal">
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -92,7 +84,7 @@ return ReactDOM.createPortal(
           <div className="form-columns">
             <div className="form-column">
               <div className="preview">
-                <img src={preview || "src/assets/Снимок экрана 2025-10-04 155715.png"} alt="preview" />
+                <img src={preview || "/src/assets/placeholder.png"} alt="preview" />
               </div>
               <div className="form-group">
                 <label>Вставити фото</label>
@@ -135,9 +127,8 @@ return ReactDOM.createPortal(
         </form>
       </div>
     </div>,
-    document.body // портал рендерится в body
+    document.body
   );
 };
-
 
 export default CreateProjectModal;
