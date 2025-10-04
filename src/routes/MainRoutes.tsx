@@ -12,8 +12,6 @@ import Compartments from "../pages/projects/project/modules/compartments/Compart
 import Zones from "../pages/projects/project/modules/compartments/zones/Zones";
 import Project from "../pages/projects/project/project";
 
-
-
 export function MainRoutes(){
     return (
         <Router basename={ import.meta.env.VITE_BASENAME }>

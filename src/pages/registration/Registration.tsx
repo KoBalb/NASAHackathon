@@ -22,7 +22,7 @@ export default function Registration() {
     onSuccess: (data) => {
       if (data.token) {
         login(data.token); 
-        navigate("/home");
+        navigate("/");
       } else {
         alert("Регистрация успешна! Теперь войдите в систему.");
         navigate("/login");

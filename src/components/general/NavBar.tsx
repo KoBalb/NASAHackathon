@@ -1,7 +1,11 @@
 import "./NavBarStyle.css";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function NavigationBar() {
+
+  const navigate = useNavigate();
+
   return (
     <div className="header">
       <div>
@@ -17,14 +21,14 @@ function NavigationBar() {
             Мої проекти
           </NavLink>
 
-          <NavLink to="/catalog">
+          <NavLink to="/catalogs">
             Каталог
           </NavLink>
 
           <NavLink to="/astronauts">
             Космонавти
           </NavLink>
-          <button className="login-btn">Вхід</button>
+          <button onClick={() => navigate("/login")} className="login-btn">Вхід</button>
         </nav>
       </div>
     </div>

@@ -18,7 +18,7 @@ export default function Login() {
     },
     onSuccess: (data) => {
       login(data.token);
-      navigate("/home");
+      navigate("/");
     },
     onError: () => {
       alert("Invalid email or password");

@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, ReactNode, } from "react";
 import api from "./api/api";
 
-
 type AuthContextType = {
   token: string | null;
   login: (token: string) => void;

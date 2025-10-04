@@ -4,7 +4,7 @@ import StartBuildButton from "../../components/home/StartBuildBtn/StartBuildButt
 import DesriptionCard from "../../components/home/DescriptionCard/DescriptionCard";
 import TextBlock from "../../components/home/TextBlock/TextBlock";
 import PhotoCard from "../../components/home/PhotoCard/PhotoCard";
-import "../general/PageStyles.css";
+import "../../components/general/PageStyles.css";
 
 function Home() {
     return (
