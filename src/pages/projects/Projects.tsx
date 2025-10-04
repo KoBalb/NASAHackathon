@@ -1,18 +1,19 @@
-import { useParams } from "react-router-dom";
+import NavigationBar from "../../components/general/NavBar";
+import "../../components/general/PageStyles.css";
+import SearchBar from "../../components/projects/SearchBar/SearchBar";
+import ProjectsBar from "../../components/projects/ProjectsCards/ProjectsBar";
 
-type ProjectsHrefIdTypization = {
-	projectId: string;
-}
 
 function Projects() {
-
-	const { projectId } = useParams<ProjectsHrefIdTypization>();
-	return (
-		<div>
-			<h1>Projects Page</h1>
-			<h1>Project: {projectId}</h1>
-		</div>
-	);
+    return (
+        <div className="home-page">
+            <NavigationBar />
+            <main>
+                <SearchBar />
+				<ProjectsBar />
+            </main>
+        </div>
+    )
 }
 
 export default Projects;
