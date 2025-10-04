@@ -1,18 +1,27 @@
+import React from "react";
 import CreateProjectCard from "./CreateProjectCard";
-import "./ProjecrCardsStyles.css";
 import ProjectCard from "./ProjectCard";
+import "./ProjecrCardsStyles.css";
+import { useProjects } from "../../../hooks/Projectshooks/project_hooks";
 
 function ProjectsBar() {
-    return (
-        <div className="card-container">
-            <CreateProjectCard />
-            <ProjectCard date="24.09.2025">My Project</ProjectCard>
-            <ProjectCard date="15.09.2025">Star 1</ProjectCard>
-            <ProjectCard date="01.10.2025">Корабель</ProjectCard>
-            <ProjectCard date="03.10.2025">Новий проєкт</ProjectCard>
-        </div>
-    )
+  // пример данных проектов
+  const { data: projects, error } = useProjects();
+  console.log("Projects data:", error);
+    if (!projects) return <div>Loading...</div>;
+    if (error) return <div>Error loading projects</div>;
+  
+  return (
+    <div className="card-container">
+      <CreateProjectCard />
+
+        {projects.map((p) => (
+        <ProjectCard key={p.id} date={p.created_at} project={p}>
+          {p.name}
+        </ProjectCard>
+      ))}
+    </div>
+  );
 }
 
 export default ProjectsBar;
-
