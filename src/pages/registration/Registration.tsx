@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { Auth } from "../../AuthContext";
+import { useEffect } from "react";
 type RegistrationForm = {
   username: string;
   password: string;
@@ -22,7 +23,7 @@ export default function Registration() {
     onSuccess: (data) => {
       if (data.token) {
         login(data.token); 
-        navigate("/home");
+        navigate("/");
       } else {
         alert("Регистрация успешна! Теперь войдите в систему.");
         navigate("/login");
@@ -37,6 +38,12 @@ export default function Registration() {
   const onSubmit = (data: RegistrationForm) => {
     mutation.mutate(data);
   };
+    const token = localStorage.getItem("token"); 
+    useEffect(() => {
+      if (token) {
+        navigate("/"); 
+      }
+    }, [token, navigate]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
