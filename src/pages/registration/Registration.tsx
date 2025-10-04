@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import { Auth } from "../../AuthContext";
 import { useEffect } from "react";
@@ -74,9 +74,9 @@ export default function Registration() {
           type="password"
         />
         <div className="button-container">
-          <button className="button-cancel">
-            Відмінити
-          </button>
+          <NavLink to="/" className="button-cancel">
+            На головну
+          </NavLink>
           <button type="submit" className="button-registration">
             Створити акаунт
           </button>
