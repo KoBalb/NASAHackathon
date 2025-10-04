@@ -6,45 +6,69 @@ import Catalog from "../../../components/project/Catalog/Catalog";
 import Grid from "../../../components/project/Grid/Grid";
 import "../../../components/project/ProjectPage.css";
 
+import { useModules } from "../../../hooks/Moduleshooks/modules_hooks";
+import { useProject } from "../../../hooks/Projectshooks/project_hooks";
+import { useParams } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
+
+import { useEffect } from "react";
+
 const INITIAL_GRID = Array(12).fill(null);
 
 export default function Project() {
+
+  const navigate = useNavigate();
+
+  const { projectId } = useParams<{ projectId: string }>();
+
+  const id = projectId ? Number(projectId) : undefined;
+
+  const { data: modulesData } = useModules(id as number)
+  const { data: projectData } = useProject(id as number)
+
   const [views, setViews] = useState<Record<string, (string | null)[]>>({
     root: [...INITIAL_GRID],
   });
 
-  const [viewStack, setViewStack] = useState<string[]>(["root"]);
+  const [viewStack] = useState<string[]>(["root"]);
 
-  const [catalogItems, setCatalogItems] = useState<string[]>([
-    "Engine",
-    "Solar Panel",
-    "Antenna",
-    "Sensor",
-    "Battery",
-    "Camera",
-    "Thruster",
-  ]);
+  const [catalogItems, setCatalogItems] = useState<string[]>([]);
 
-  const [viewNames, setViewNames] = useState<Record<string, string>>({
+  useEffect(() => {
+    if (modulesData) {
+      setCatalogItems(modulesData.map(module => module.name));
+      console.log(modulesData)
+    }
+  }, [modulesData]);
+
+  useEffect(() => {
+    if (projectData) {
+      console.log(projectData)
+    }
+  }, [projectData]);
+
+  const [viewNames] = useState<Record<string, string>>({
     root: "Spaceship Builder",
   });
 
   const currentView = viewStack[viewStack.length - 1];
+  const prevView = viewStack.length > 1 ? viewStack[viewStack.length - 2] : null;
 
   function pushChildView(index: number) {
-    const childId = `${currentView}-child-${index}`;
-    const itemName = views[currentView]?.[index] ?? "Unnamed Module";
+    const itemName = views[currentView]?.[index];
 
-    setViews(prev => (prev[childId] ? prev : { ...prev, [childId]: [...INITIAL_GRID] }));
+    if (!itemName) return;
 
-    setViewNames(prev => (prev[childId] ? prev : { ...prev, [childId]: itemName }));
+    const module = modulesData?.find(m => m.name === itemName);
 
-    setViewStack(prev => [...prev, childId]);
+    if (module) {
+      navigate(`/projects/${id}/modules/${module.id}`);
+    }
   }
 
-
   function goBack() {
-    if (viewStack.length > 1) setViewStack(prev => prev.slice(0, -1));
+    navigate("/")
   }
 
   function handleDragEnd(event: any) {
@@ -97,7 +121,11 @@ export default function Project() {
 
   return (
     <div className="project__content_container">
-      <Navbar topName={viewNames[currentView]} />
+      <Navbar
+        topName={projectData?.name}
+        prevName={prevView ? viewNames[prevView] : undefined}
+        onBackClick={goBack}
+      />
       <div className="project__content_main">
         <DndContext onDragEnd={handleDragEnd}>
           <Catalog
