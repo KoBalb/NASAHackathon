@@ -1,0 +1,13 @@
+/* Тут стилі для блоків тексту */
+.txt-block {
+  font-family: "Monterchi-Sans";
+  font-size: 24pt;
+  color: white;
+}
+.about-us {
+  max-width: 400px;
+}
+.block {
+  max-width: 1200px;
+  text-align: center;
+}

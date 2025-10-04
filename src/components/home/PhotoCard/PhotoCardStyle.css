@@ -1,0 +1,7 @@
+/* Тут стилі для наших фотокарток */
+.photo-card {
+  border-radius: 30px;
+  background-color: blueviolet;
+  height: 250px;
+  width: 250px;
+}

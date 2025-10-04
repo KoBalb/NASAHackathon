@@ -1,0 +1,47 @@
+.home-page {
+  min-height: 100vh;               
+  background-image: url("../images/mainBackground.png");
+  background-size: cover;             
+  background-position: center;        
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.home-page main {
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+}
+
+.des-card-container {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 70px;
+}
+
+/* Тут стилі для блоків тексту */
+.txt-block {
+  font-family: "Monterchi-Sans";
+  font-size: 24pt;
+  color: white;
+}
+.about-us {
+  max-width: 400px;
+}
+.block {
+  max-width: 1200px;
+  text-align: center;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 50px;
+}
+.cards-flex {
+  display: flex;
+  flex-wrap: wrap;        
+  gap: 20px;              
+  max-width: 800px;        
+}
