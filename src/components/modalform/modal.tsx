@@ -1,13 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProject, updateProject } from "../../api/projectsApi/projects_api";
 import { updateProjectSettings } from "../../api/settingsApi/settings_api";
+import "./modal.css";
+import ReactDOM from "react-dom";
 
+interface CreateProjectModalProps {
+  onClose: () => void;
+  existingProject?: any; // проект для редактирования
+}
 
-const CreateProjectModal = ({ onClose, existingProject }) => {
-  const [preview, setPreview] = useState(existingProject?.preview || null);
-  const [file, setFile] = useState(null);
+const CreateProjectModal = ({ onClose, existingProject }: CreateProjectModalProps) => {
+  const [preview, setPreview] = useState<string | null>(existingProject?.preview || null);
   const queryClient = useQueryClient();
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({
@@ -23,55 +28,48 @@ const CreateProjectModal = ({ onClose, existingProject }) => {
   }, [existingProject, setValue]);
 
   const mutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async (data: any) => {
       let project;
 
-      if (existingProject) {
-        // Редактирование — PATCH JSON
-        const updateData = {
-          name: data.name,
-          description: data.description,
-          teg: data.teg_id,
-        };
+  if (existingProject) {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("description", data.description);
+  if (data.teg_id) formData.append("teg", data.teg_id);
+  if (data.preview && data.preview[0]) {
+  formData.append("preview", data.preview[0]); // <-- новая картинка
+  }
 
-        // Если есть новый файл, используем FormData для PATCH
-        if (file) {
-          const formData = new FormData();
-          formData.append("name", data.name);
-          formData.append("description", data.description);
-          if (data.teg_id) formData.append("teg", data.teg_id);
-          formData.append("preview", file);
-          project = await updateProject(existingProject.id, formData, true); // true = FormData
-        } else {
-          project = await updateProject(existingProject.id, updateData);
-        }
+  project = await updateProject(existingProject.id, formData);
+  console.log("Проект обновлён:", project);
+  } else {
+  // создание нового проекта
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("description", data.description);
+  if (data.teg_id) formData.append("teg", data.teg_id);
+if (data.preview && data.preview[0]) {
+  formData.append("preview", data.preview[0]); // новое фото
+} else if (existingProject?.preview) {
+  formData.append("preview_url", existingProject.preview); // старое фото, сервер должен поддерживать такое поле
+}
 
-        console.log("Проект обновлён:", project);
-      } else {
-        // Создание — FormData
-        const formData = new FormData();
-        formData.append("name", data.name);
-        formData.append("description", data.description);
-        if (data.teg_id) formData.append("teg", data.teg_id);
-        if (file) formData.append("preview", file);
-        project = await createProject(formData);
-        console.log("Создан проект:", project);
-      }
-
-      // Обновляем настройки проекта
+  project = await createProject(formData as any);
+  console.log("Создан проект:", project);
+  }
+      // обновляем настройки проекта
       const settingsData = {
-        recursive_water: data.recursive_water ? Number(data.recursive_water) : 0,
-        max_weight: data.max_weight ? Number(data.max_weight) : 0,
-        max_price: data.max_price ? Number(data.max_price) : 0,
+        recursive_water: data.recursive_water || 0,
+        max_weight: data.max_weight || 0,
+        max_price: data.max_price || 0,
       };
-      console.log("Sending settings:", settingsData);
       await updateProjectSettings(project.id, settingsData);
       console.log("Настройки проекта обновлены:", settingsData);
 
       return project;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries(["projects"]); // обновляем список проектов
       onClose();
     },
     onError: (error) => {
@@ -79,9 +77,14 @@ const CreateProjectModal = ({ onClose, existingProject }) => {
     },
   });
 
-  const onSubmit = (data) => mutation.mutate(data);
+  const onSubmit = (data: any) => mutation.mutate(data);
 
-  return (
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setPreview(URL.createObjectURL(file));
+  };
+
+return ReactDOM.createPortal(
     <div className="modal-overlay">
       <div className="modal">
         <button className="modal-close" onClick={onClose}>✕</button>
@@ -91,64 +94,50 @@ const CreateProjectModal = ({ onClose, existingProject }) => {
               <div className="preview">
                 <img src={preview || "src/assets/Снимок экрана 2025-10-04 155715.png"} alt="preview" />
               </div>
-
               <div className="form-group">
                 <label>Вставити фото</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const selected = e.target.files?.[0] || null;
-                    setFile(selected);
-                    if (selected) setPreview(URL.createObjectURL(selected));
-                  }}
-                />
+                <input type="file" accept="image/*" {...register("preview")} onChange={handleFileChange} />
               </div>
-
               <div className="form-group">
                 <label>Назва проекту</label>
-                <input {...register("name", { required: true })} placeholder="Наприклад Falcon X" />
+                <input {...register("name", { required: true })} />
                 {errors.name && <p className="error">Поле названия обязательно</p>}
               </div>
-
               <div className="form-group">
                 <label>Тег</label>
-                <input {...register("teg_id")} placeholder="Наприклад Space" />
+                <input {...register("teg_id")} />
               </div>
             </div>
 
             <div className="form-column">
               <div className="form-group">
                 <label>Бюджет ($)</label>
-                <input type="number" {...register("max_price")} placeholder="Наприклад 20000000" />
+                <input type="number" {...register("max_price")} />
               </div>
-
               <div className="form-group">
                 <label>Максимальна вага (т)</label>
-                <input type="number" {...register("max_weight")} placeholder="Наприклад 30" />
+                <input type="number" {...register("max_weight")} />
               </div>
-
               <div className="form-group">
                 <label>Зворотна вода (%)</label>
-                <input type="number" {...register("recursive_water")} placeholder="Наприклад 80" />
+                <input type="number" {...register("recursive_water")} />
               </div>
-
               <div className="form-group">
                 <label>Опис проекту</label>
-                <textarea {...register("description")} placeholder="Наприклад: Це космічний проєкт для..." />
+                <textarea {...register("description")} />
               </div>
             </div>
           </div>
 
           <button type="submit" disabled={mutation.isPending} className="submit-btn">
-            {mutation.isPending
-              ? existingProject ? "Редагування..." : "Створення..."
-              : existingProject ? "Редагувати проєкт" : "Створити проєкт"}
+            {existingProject ? "Редагувати" : "Створити"}
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body // портал рендерится в body
   );
 };
+
 
 export default CreateProjectModal;
