@@ -1,4 +1,5 @@
-import "./GridItem.css"
+// GridItem.tsx
+import "./GridItem.css";
 
 type GridItemProps = {
   label: string;

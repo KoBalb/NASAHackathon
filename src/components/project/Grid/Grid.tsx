@@ -1,64 +1,56 @@
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useDroppable, useDraggable } from "@dnd-kit/core";
+import GridItem from "../GridItem/GridItem";
 import "./Grid.css";
 
-import GridItem from "../GridItem/GridItem";
-
 type GridProps = {
+  viewId: string;
   items: (string | null)[];
-  onDrop?: (item: string, index: number) => void;
+  onSquareDoubleClick?: (index: number) => void;
 };
 
-function Grid({ items, onDrop }: GridProps) {
+export default function Grid({ viewId, items, onSquareDoubleClick }: GridProps) {
   return (
     <div className="grid__container">
       {items.map((label, idx) => (
         <GridSquare
           key={idx}
+          viewId={viewId}
           index={idx}
           item={label}
-          onDrop={onDrop}
+          onDoubleClick={onSquareDoubleClick}
         />
       ))}
     </div>
   );
 }
 
-export default Grid;
+function GridSquare({ viewId, index, item, onDoubleClick }: any) {
+  const droppableId = `${viewId}-square-${index}`;
+  const { isOver, setNodeRef } = useDroppable({ id: droppableId });
 
-function GridSquare({ index, item }: any) {
-  const { isOver, setNodeRef } = useDroppable({ id: `square-${index}` });
-
-  const { attributes, listeners, setNodeRef: setItemRef, transform } =
-    useDraggable({
-      id: item ?? '',
-      disabled: !item,
-      data: { fromGrid: true, index },
-    });
+  const { attributes, listeners, setNodeRef: setItemRef, transform } = useDraggable({
+    id: item ? `grid-${viewId}-${index}` : `empty-${viewId}-${index}`,
+    disabled: !item,
+    data: { fromGrid: !!item, index, viewId, label: item },
+  });
 
   const itemStyle = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 10 }
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 20 }
     : {};
 
   return (
     <div
       ref={setNodeRef}
-      className="grid__item"
-      style={{ backgroundColor: isOver ? "#e0f7fa" : undefined }}
+      className="grid__cell"
+      style={{ backgroundColor: isOver ? "#9c9c9cff" : undefined }}
+      onDoubleClick={() => onDoubleClick?.(index)}
     >
-      {item && (
-        <div
-          ref={setItemRef}
-          {...listeners}
-          {...attributes}
-          style={{
-            ...itemStyle,
-            width: "100%",
-            height: "100%",
-            cursor: "grab",
-          }}
-        >
+      {item ? (
+        <div ref={setItemRef} {...listeners} {...attributes} style={{ ...itemStyle, width: "100%", height: "100%" }}>
           <GridItem label={item} />
         </div>
+      ) : (
+        <div className="grid__empty">+</div>
       )}
     </div>
   );

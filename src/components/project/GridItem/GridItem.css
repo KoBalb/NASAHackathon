@@ -1,6 +1,7 @@
 .grid__item {
   background-color: #1d221d;
-  height: 110px;
+  min-height: 110px;
+  height: 100%;
   border: 2px solid #fff;
   border-radius: 16px;
   display: flex;

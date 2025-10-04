@@ -4,25 +4,19 @@ import GridItem from "../GridItem/GridItem.tsx";
 import SearchIcon from "../../../assets/icons/search_icon.svg";
 import "./Catalog.css";
 
-type CatalogItemProps = {
-  id: string;
-  label: string;
-};
-
 type CatalogProps = {
   items: string[];
   onItemRemove: (id: string) => void;
 };
 
-function CatalogItem({ label }: CatalogItemProps) {
+function CatalogItem({ label, index }: { label: string; index: number }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: label,
+    id: `catalog-${label}`,
+    data: { fromGrid: false, label, catalogIndex: index },
   });
 
   const style = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     cursor: "grab",
   };
 
@@ -65,8 +59,8 @@ export default function Catalog({ items }: CatalogProps) {
           {items.map((label, idx) => (
             <CatalogItem
               key={idx}
-              id={`catalog-${idx}`}
               label={label}
+              index={idx}
             />
           ))}
         </div>
