@@ -1,4 +1,4 @@
-/* Тут стилі для навігаційної панелі */
+/* Стилі для верхньої панелі */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -12,6 +12,19 @@
   margin-bottom: 2em;
 }
 
+/* Стилі для контейнеру з логотипом */
+.logo-container {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+}
+.logo-container img {
+  width: 50px;
+  height: 50px;
+}
+
 .logo {
   font-size: 22px;
   font-weight: bold;
@@ -19,6 +32,8 @@
   padding: 1em;
 }
 
+
+/* Стилі для навігаційної панелі */
 .nav {
   font-size: 20px;
   display: flex;

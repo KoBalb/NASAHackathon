@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Auth } from "../../AuthContext";
 import api from "../../api/api";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 
@@ -56,9 +56,9 @@ export default function Login() {
           <input {...register("password")} type="password" />
 
           <div className="button-container">
-            <button className="button-cancel">
+            <NavLink to="/register" className="button-registr">
               Реєстрація
-            </button>
+            </NavLink>
             <button type="submit" className="button-login">
               Увійти
             </button>
