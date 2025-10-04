@@ -1,15 +1,15 @@
-export const Enum = {
-  ES: "external systems",
-  CO: "components",
-  SL: "closets",
-  ZN: "zones",
-  CM: "compartments",
-  MO: "modules",
+enum TypeEnum {
+  ES, "external-systems",
+  CO, "components",
+  SL, "closets",
+  ZN, "zones",
+  CM, "compartments",
+  MO, "modules",
 };
 
 export type Catalog = {
   id?: number;
-  type: string;
+  type: TypeEnum;
   name: string;
   photo: string;
   teg: number;
@@ -161,6 +161,15 @@ export type ExternalSystemsResources = {
 };
 
 export type Project = {
+  id: number;
+  name: string;
+  description: string;
+  preview: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectSettings = {
   id: number;
   name: string;
   description: string;
