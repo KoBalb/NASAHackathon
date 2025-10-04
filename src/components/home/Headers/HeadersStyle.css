@@ -1,0 +1,12 @@
+/* Тут стилі для великих заголовків */
+
+.head-title {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10em;
+}
+.head-title h1{
+  font-family: "Monterchi-Sans";
+  font-size: 50pt;
+  color: white;
+}
