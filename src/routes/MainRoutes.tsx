@@ -26,9 +26,7 @@ export function MainRoutes(){
                     </ProtectedRoute>
                 } />
                 <Route path="/" element={
-                    <ProtectedRoute>
-                        <Home />
-                    </ProtectedRoute>
+                    <Home />
                 } />
                 <Route path="/astronauts" element={
                     <ProtectedRoute>

@@ -115,6 +115,7 @@
     width: 8em;
     cursor: pointer;
     transition: 0.2s ease;
+    text-decoration: none;
 }
 .button-cancel:hover {
     transform: scale(1.1);

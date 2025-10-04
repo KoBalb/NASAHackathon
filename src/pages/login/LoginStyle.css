@@ -105,7 +105,7 @@
     justify-content: center;
     gap: 150px;
 }
-.button-cancel {
+.button-registr {
     border: 2px solid white;
     border-radius: 5px;
     color: white;
@@ -115,8 +115,9 @@
     width: 8em;
     cursor: pointer;
     transition: 0.2s ease;
+    text-decoration: none;
 }
-.button-cancel:hover {
+.button-registr:hover {
     transform: scale(1.1);
 }
 

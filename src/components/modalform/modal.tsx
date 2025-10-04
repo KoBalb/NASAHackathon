@@ -5,49 +5,46 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProject, updateProject } from "../../api/projectsApi/projects_api";
 import { updateProjectSettings } from "../../api/settingsApi/settings_api";
 import "./modal.css";
+import type { Project, ProjectSettings } from "../../types";
 
 interface CreateProjectModalProps {
   onClose: () => void;
-  existingProject?: any; // проект для редактирования
+  existingProject?: Project; // проект для редактирования
 }
 
 const CreateProjectModal = ({ onClose, existingProject }: CreateProjectModalProps) => {
   const [preview, setPreview] = useState<string | null>(existingProject?.preview || null);
   const queryClient = useQueryClient();
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm<Project>({
     defaultValues: existingProject || {},
   });
 
-  useEffect(() => {
-    if (existingProject) {
-      Object.keys(existingProject).forEach((key) => {
-        setValue(key, existingProject[key]);
-      });
-    }
-  }, [existingProject, setValue]);
 
   const mutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Project & ProjectSettings) => {
       const formData = new FormData();
+      console.log(`ff  ${data.preview}`)
       formData.append("name", data.name);
       formData.append("description", data.description);
-      if (data.teg_id) formData.append("teg", data.teg_id);
-
-      // добавляем новое фото только если выбрано
-      if (data.preview && data.preview[0]) {
-        formData.append("preview", data.preview[0]);
+      if (data.teg) formData.append("teg", data.teg);
+      console.log(`ff  data.preview: ${data.preview} data.preview?.[0] : ${data.preview?.[0]}`) 
+      
+      if (data.preview[0] === 'h') { // не трогать
+        formData.delete("preview");
       }
-
+      else {
+        formData.append("preview", data.preview[0]);
+    }
       let project;
       if (existingProject) {
         project = await updateProject(existingProject.id, formData);
         console.log("Проект обновлён:", project);
       } else {
-        project = await createProject(formData as any);
+        project = await createProject(formData);
         console.log("Создан проект:", project);
       }
-
+      //
       // обновляем настройки проекта
       const settingsData = {
         recursive_water: data.recursive_water || 0,
@@ -60,7 +57,7 @@ const CreateProjectModal = ({ onClose, existingProject }: CreateProjectModalProp
       return project;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       onClose();
     },
     onError: (error) => {
