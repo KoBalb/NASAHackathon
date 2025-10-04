@@ -161,19 +161,17 @@ export type ExternalSystemsResources = {
 };
 
 export type Project = {
-  id: number;
+  id?: number;
   name: string;
   description: string;
   preview: string;
-  created_at: string;
-  updated_at: string;
+  teg?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type ProjectSettings = {
-  id: number;
-  name: string;
-  description: string;
-  preview: string;
-  created_at: string;
-  updated_at: string;
+  "recursive_water": number,
+  "max_weight": number,
+  "max_price": number
 };
