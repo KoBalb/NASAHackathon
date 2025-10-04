@@ -1,0 +1,124 @@
+/* Стилі контейнера для карток */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;        
+  gap: 20px;              
+  max-width: 1100px; 
+    
+}
+
+/* Стилі картки нового проєкта */
+.prjct-card.create {
+  background: linear-gradient(
+    180deg,
+    rgba(23, 33, 43, 0.76),
+    rgba(24, 73, 95, 0.671)
+  );
+  border: 4px dashed rgb(65, 134, 136);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.prjct-card.create h2{
+  font-size: 25pt;
+  margin-top: 0.4em;
+  margin-bottom: 0;
+}
+.plus-sign {
+  width: 80px;          
+  height: 80px;
+  border-radius: 50%;    
+  border: 0px;        
+  background-color: transparent;  
+  background-size: 100%;     
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-top: 5em;
+}
+.prjct-card.create:hover {
+  cursor: pointer;
+  transform: scale(1.05);
+  background: linear-gradient(
+    180deg,
+    rgba(47, 68, 88, 0.76),
+    rgba(35, 105, 138, 0.671)
+  );
+}
+
+/* Стилі картки */
+.prjct-card {
+  border-radius: 15px;
+  overflow: hidden;
+  width: 350px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-family: "Monterchi-Sans", sans-serif;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.prjct-card:hover {
+  transform: scale(1.05);
+}
+
+.card-image {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(255,255,255,0.1);
+}
+
+.card-info h3 {
+  margin: 0;
+  font-size: 17pt;
+  text-align: start;
+}
+
+.card-info p {
+  margin: 2px 0 0;
+  font-size: 14pt;
+  opacity: 0.8;
+  text-align: start;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.catalog-action-btn {
+  width: 40px;          
+  height: 40px;
+  border-radius: 50%;          
+  background-size: 100%;     
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.catalog-action-btn:hover {
+  transform: scale(1.1);
+  background-color: rgba(255,255,255,0.2);
+}
+
+/* кнопка удаления */
+.catalog-action-btn.delete {
+  background-image: url("../../images/deleteProject.png");
+  border-color: red;
+}
+
+.catalog-action-btn.delete:hover {
+  background-color: rgba(255,0,0,0.2);
+}
+
