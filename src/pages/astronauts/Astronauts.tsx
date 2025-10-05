@@ -1,24 +1,22 @@
-import { useState } from "react";
-
+import React from "react";
+import ModuleForm from "../../components/redactorForm/redactorForm";
 import ResourceManager from "../../components/resourcesCard/ResourcesCard";
+import Modal from "../../components/redactorForm/redactorForm";
 
 
 function Astronauts() {
         
 
-    const [modalOpen, setModalOpen] = useState(false);
-    return( <>
-      {/* <button onClick={() => setModalOpen(true)}>
-        Дasdddddddddddddddddd
-      </button>
-        
-      {modalOpen && (
-        <ResourceForm 
-          onClose={() => setModalOpen(false)} 
-        />
-      )} */}
-      <ResourceManager/>
-    </>
+ return (
+    <div className="redactor-container">
+      <div className="redactor-left">
+        <ModuleForm />
+      </div>
+      <div className="redactor-right">
+        <ResourceManager />
+      </div>
+    </div>
   );
-}
+};
+
 export default Astronauts;
