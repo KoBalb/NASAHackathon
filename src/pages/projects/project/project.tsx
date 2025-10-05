@@ -6,12 +6,19 @@ import Catalog from "../../../components/project/Catalog/Catalog";
 import Grid from "../../../components/project/Grid/Grid";
 import "../../../components/project/ProjectPage.css";
 
-import { useModules, useUpdateModule } from "../../../hooks/Moduleshooks/modules_hooks";
+import {
+  useModules,
+  useUpdateModule,
+} from "../../../hooks/Moduleshooks/modules_hooks";
 import { useProject } from "../../../hooks/Projectshooks/project_hooks";
-import { useExternalSystems, useUpdateExternalSystem } from "../../../hooks/Externalsystemshooks/external_systems_hooks";
+import {
+  useExternalSystems,
+  useUpdateExternalSystem,
+} from "../../../hooks/Externalsystemshooks/external_systems_hooks";
 
 import { ProjectWrapper } from "../../../wrappers/project_form_wrapper";
 import { useParams, useNavigate } from "react-router-dom";
+import MaterialModal from "../../../wrappers/resourceListModal";
 
 const INITIAL_GRID = Array(12).fill(null);
 const ROW_SIZE = 4;
@@ -30,14 +37,20 @@ export default function Project() {
   const { mutate: updateModule } = useUpdateModule(id as number);
   const { mutate: updateExternalSystem } = useUpdateExternalSystem(String(id));
 
-  const [views, setViews] = useState<Record<string, (string | null)[]>>({ root: [...INITIAL_GRID] });
-  const [itemDimensions, setItemDimensions] = useState<Record<string, { width: number; height: number }>>({});
+  const [views, setViews] = useState<Record<string, (string | null)[]>>({
+    root: [...INITIAL_GRID],
+  });
+  const [itemDimensions, setItemDimensions] = useState<
+    Record<string, { width: number; height: number }>
+  >({});
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("Модулі");
   const [viewStack] = useState<string[]>(["root"]);
   const [availableModules, setAvailableModules] = useState<string[]>([]);
   const [availableExSystems, setAvailableExSystems] = useState<string[]>([]);
-  const [viewNames] = useState<Record<string, string>>({ root: "Spaceship Builder" });
+  const [viewNames] = useState<Record<string, string>>({
+    root: "Spaceship Builder",
+  });
 
   // Initialize grid & dimensions
   useEffect(() => {
@@ -60,26 +73,31 @@ export default function Project() {
     };
 
     if (modulesData) {
-      setAvailableModules(modulesData.filter(m => !m.x && !m.y).map(m => m.name));
+      setAvailableModules(
+        modulesData.filter((m) => !m.x && !m.y).map((m) => m.name)
+      );
       modulesData.forEach(processItem);
     }
 
     if (exSystemsData) {
-      setAvailableExSystems(exSystemsData.filter(s => !s.x && !s.y).map(s => s.name));
+      setAvailableExSystems(
+        exSystemsData.filter((s) => !s.x && !s.y).map((s) => s.name)
+      );
       exSystemsData.forEach(processItem);
     }
 
-    setItemDimensions(prev => ({ ...prev, ...dimensions }));
+    setItemDimensions((prev) => ({ ...prev, ...dimensions }));
     setViews({ root: newGrid });
   }, [modulesData, exSystemsData]);
 
   const currentView = viewStack[viewStack.length - 1];
-  const prevView = viewStack.length > 1 ? viewStack[viewStack.length - 2] : null;
+  const prevView =
+    viewStack.length > 1 ? viewStack[viewStack.length - 2] : null;
 
   function pushChildView(index: number) {
     const itemName = views[currentView]?.[index];
     if (!itemName) return;
-    const module = modulesData?.find(m => m.name === itemName);
+    const module = modulesData?.find((m) => m.name === itemName);
     if (module) navigate(`/projects/${id}/modules/${module.id}`);
   }
 
@@ -101,10 +119,10 @@ export default function Project() {
 
     const { width = 1, height = 1 } = itemDimensions[label] || {};
 
-    const movedModule = modulesData?.find(m => m.name === label);
-    const movedExSystem = exSystemsData?.find(s => s.name === label);
+    const movedModule = modulesData?.find((m) => m.name === label);
+    const movedExSystem = exSystemsData?.find((s) => s.name === label);
 
-    setViews(prev => {
+    setViews((prev) => {
       const copy = { ...prev };
 
       // Remove from source grid
@@ -119,11 +137,22 @@ export default function Project() {
       // Dropped outside → catalog
       if (!destView || typeof destIndex !== "number") {
         if (fromGrid) {
-          if (selectedFilter === "Модулі") setAvailableModules(prev => prev.includes(label) ? prev : [...prev, label]);
-          else setAvailableExSystems(prev => prev.includes(label) ? prev : [...prev, label]);
+          if (selectedFilter === "Модулі")
+            setAvailableModules((prev) =>
+              prev.includes(label) ? prev : [...prev, label]
+            );
+          else
+            setAvailableExSystems((prev) =>
+              prev.includes(label) ? prev : [...prev, label]
+            );
 
-          if (movedModule?.id) updateModule({ id: movedModule.id, data: { x: 0, y: 0 } });
-          if (movedExSystem?.id) updateExternalSystem({ id: movedExSystem.id, data: { ...movedExSystem, x: 0, y: 0 } });
+          if (movedModule?.id)
+            updateModule({ id: movedModule.id, data: { x: 0, y: 0 } });
+          if (movedExSystem?.id)
+            updateExternalSystem({
+              id: movedExSystem.id,
+              data: { ...movedExSystem, x: 0, y: 0 },
+            });
         }
         return copy;
       }
@@ -135,7 +164,8 @@ export default function Project() {
 
       // Check if it fits
       let fits = true;
-      if (colStart + width > ROW_SIZE || rowStart + height > totalRows) fits = false;
+      if (colStart + width > ROW_SIZE || rowStart + height > totalRows)
+        fits = false;
 
       if (fits) {
         for (let h = 0; h < height; h++) {
@@ -163,13 +193,22 @@ export default function Project() {
 
       // Remove from catalog if dragged from there
       if (!fromGrid) {
-        if (selectedFilter === "Модулі") setAvailableModules(prev => prev.filter(i => i !== label));
-        else setAvailableExSystems(prev => prev.filter(i => i !== label));
+        if (selectedFilter === "Модулі")
+          setAvailableModules((prev) => prev.filter((i) => i !== label));
+        else setAvailableExSystems((prev) => prev.filter((i) => i !== label));
       }
 
       // Save to backend (1-based)
-      if (movedModule?.id) updateModule({ id: movedModule.id, data: { x: colStart + 1, y: rowStart + 1 } });
-      if (movedExSystem?.id) updateExternalSystem({ id: movedExSystem.id, data: { ...movedExSystem, x: colStart + 1, y: rowStart + 1 } });
+      if (movedModule?.id)
+        updateModule({
+          id: movedModule.id,
+          data: { x: colStart + 1, y: rowStart + 1 },
+        });
+      if (movedExSystem?.id)
+        updateExternalSystem({
+          id: movedExSystem.id,
+          data: { ...movedExSystem, x: colStart + 1, y: rowStart + 1 },
+        });
 
       return copy;
     });
@@ -177,17 +216,30 @@ export default function Project() {
 
   return (
     <div className="project__content_container">
-      {settingsOpen && id && <ProjectWrapper projectId={String(id)} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && id && (
+        <ProjectWrapper
+          projectId={String(id)}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
       <Navbar
         topName={projectData?.name}
         prevName={prevView ? viewNames[prevView] : undefined}
-        onBackClick={goBack} onOpenResources={() => setIsModalOpen(true)}
+        onBackClick={goBack}
+        onOpenResources={() => setIsModalOpen(true)}
       />
       {isModalOpen && <MaterialModal onClose={() => setIsModalOpen(false)} />}
       <div className="project__content_main">
-        <DndContext onDragEnd={handleDragEnd} collisionDetection={rectIntersection}>
+        <DndContext
+          onDragEnd={handleDragEnd}
+          collisionDetection={rectIntersection}
+        >
           <Catalog
-            items={selectedFilter === "Модулі" ? availableModules : availableExSystems}
+            items={
+              selectedFilter === "Модулі"
+                ? availableModules
+                : availableExSystems
+            }
             firstButton="Модулі"
             secondButton="Зовнішні системи"
             selectedFilter={selectedFilter}
@@ -195,7 +247,11 @@ export default function Project() {
           />
           <div className="main__content">
             <div className="zoom-toolbar">
-              {viewStack.length > 1 && <button className="project__back_btn" onClick={goBack}>🔙 Back</button>}
+              {viewStack.length > 1 && (
+                <button className="project__back_btn" onClick={goBack}>
+                  🔙 Back
+                </button>
+              )}
             </div>
             <div className="zoom-wrapper">
               <AnimatePresence mode="wait">
