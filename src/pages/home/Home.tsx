@@ -10,6 +10,7 @@ import Koval from "../../components/images/Koval.jpg";
 import Elessar from "../../components/images/Elessar.jpg";
 import Tatiana from "../../components/images/Tatiana.jpg";
 import Mois from "../../components/images/Mois.jpg";
+import Nekit from "../../components/images/Nekita.jpg";
 
 function Home() {
     return (
@@ -36,6 +37,7 @@ function Home() {
                         <PhotoCard src={Elessar} alt="Чєлік"/>
                         <PhotoCard src={Tatiana} alt="Чєлік"/>
                         <PhotoCard src={Mois} alt="Чєлік"/>
+                        <PhotoCard src={Nekit} alt="Чєлік"/>
                     </div>
                     <div className="about-us">
                         <TextBlock>Ми — команда NovaVision, студенти-ентузіасти з університету. Створили цей сайт, щоб зробити космос ближчим і цікавішим для кожного.</TextBlock>
