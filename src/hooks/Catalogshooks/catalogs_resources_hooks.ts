@@ -46,10 +46,10 @@ export function useUpdateDefaultResource(catalogPk: number, id: number) {
 }
 
 // Удаление ресурса
-export function useDeleteDefaultResource(catalogPk: number, id: number) {
+export function useDeleteDefaultResource(catalogPk: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => deleteDefaultResource(catalogPk, id),
+    mutationFn: (id: number) => deleteDefaultResource(catalogPk, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["default-resources", catalogPk] });
     },
