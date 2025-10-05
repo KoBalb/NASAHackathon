@@ -1,4 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
+import { useState } from "react";
 import GridItem from "../GridItem/GridItem.tsx";
 
 import SearchIcon from "../../../assets/icons/search_icon.svg";
@@ -7,6 +8,10 @@ import "./Catalog.css";
 type CatalogProps = {
   items: string[];
   onItemRemove: (id: string) => void;
+  firstButton: string;
+  secondButton?: string;
+  selectedFilter: string;
+  onFilterChange: (filter: string) => void;
 };
 
 function CatalogItem({ label, index }: { label: string; index: number }) {
@@ -27,12 +32,25 @@ function CatalogItem({ label, index }: { label: string; index: number }) {
   );
 }
 
-export default function Catalog({ items }: CatalogProps) {
+export default function Catalog({ items, firstButton, secondButton, selectedFilter, onFilterChange }: CatalogProps) {
+
   return (
     <div className="catalog__container">
       <div className="catalog__filter_systems_container">
-        <button className="catalog__filter_system_btn">Внутрішні системи</button>
-        <button className="catalog__filter_system_btn">Зовнішні системи</button>
+        <button
+          className={`catalog__filter_system_btn ${selectedFilter === firstButton ? "catalog__filter_system_btn_active" : ""}`}
+          onClick={() => onFilterChange(firstButton)}
+        >
+          {firstButton}
+        </button>
+        {secondButton && (
+          <button
+            className={`catalog__filter_system_btn ${selectedFilter === secondButton ? "catalog__filter_system_btn_active" : ""}`}
+            onClick={() => onFilterChange(secondButton)}
+          >
+            {secondButton}
+          </button>
+        )}
       </div>
       <div className="catalog__catalog_container">
         <p className="catalog__catalog_text">Каталог</p>

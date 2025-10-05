@@ -91,3 +91,8 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
+
+.catalog__filter_system_btn_active {
+  background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+  color: white;
+}

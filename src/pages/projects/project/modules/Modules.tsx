@@ -116,6 +116,9 @@ function Modules() {
                 <DndContext onDragEnd={handleDragEnd}>
                     <Catalog
                         items={catalogItems}
+                        firstButton="Відсіки"
+                        selectedFilter="Відсіки"
+                        onFilterChange={() => { }}
                         onItemRemove={(id) => setCatalogItems((prev) => prev.filter((i) => i !== id))}
                     />
 

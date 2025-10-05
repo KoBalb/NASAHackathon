@@ -128,7 +128,7 @@ function Compartments() {
         <div className="project__content_container">
             <Navbar
                 topName={viewNames.root}
-                prevName={moduleData?.name}   // ✅ show module name as "previous"
+                prevName={moduleData?.name}
                 onBackClick={() => navigate(`/projects/${projectPk}/modules/${modulePk}`)}
             />
 
@@ -137,6 +137,9 @@ function Compartments() {
                     <Catalog
                         items={catalogItems}
                         onItemRemove={(id) => setCatalogItems((prev) => prev.filter((i) => i !== id))}
+                        firstButton="Зони"
+                        selectedFilter="Зони"
+                        onFilterChange={() => {}}
                     />
 
                     <div className="main__content">

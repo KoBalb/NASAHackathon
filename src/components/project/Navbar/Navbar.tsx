@@ -6,10 +6,11 @@ type NavProps = {
   prevName?: string;
   onBackClick?: () => void;
   onOpenResources?: () => void; // 👈 добавили
+  onSettingsClick?: () => void;  // 👈 new
 };
 
-export default function Navbar({ topName, prevName, onBackClick, onOpenResources }: NavProps) {
-  
+export default function Navbar({ topName, prevName, onBackClick, onSettingsClick }: NavProps) {
+
   return (
     <nav className="project__navbar_container">
       <button className="navbar__start_btn" onClick={onBackClick}>
@@ -25,8 +26,12 @@ export default function Navbar({ topName, prevName, onBackClick, onOpenResources
         <button className="navbar__right_btn">
           <p className="navbar__right_text">Створити місію</p>
         </button>
-        <button className="navbar__right_settings_btn">
-          <img className="navbar__right_settings_icon" src={settingsIcon} alt="settings icon" />
+        <button className="navbar__right_settings_btn" onClick={onSettingsClick}>
+          <img
+            className="navbar__right_settings_icon"
+            src={settingsIcon}
+            alt="settings icon"
+          />
         </button>
       </div>
 

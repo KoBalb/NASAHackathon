@@ -8,6 +8,10 @@ import "../../../components/project/ProjectPage.css";
 
 import { useModules } from "../../../hooks/Moduleshooks/modules_hooks";
 import { useProject } from "../../../hooks/Projectshooks/project_hooks";
+import { useExternalSystems } from "../../../hooks/Externalsystemshooks/external_systems_hooks";
+
+import { ProjectWrapper } from "../../../wrappers/project_form_wrapper";
+
 import { useParams } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
@@ -28,10 +32,15 @@ export default function Project() {
 
   const { data: modulesData } = useModules(id as number)
   const { data: projectData } = useProject(id as number)
+  const { data: exSystemsData } = useExternalSystems(String(id));
 
   const [views, setViews] = useState<Record<string, (string | null)[]>>({
     root: [...INITIAL_GRID],
   });
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const [selectedFilter, setSelectedFilter] = useState("Модулі");
 
   const [viewStack] = useState<string[]>(["root"]);
 
@@ -49,6 +58,21 @@ export default function Project() {
       console.log(projectData)
     }
   }, [projectData]);
+
+  useEffect(() => {
+    if (exSystemsData) {
+      console.log(exSystemsData)
+    }
+  }, [exSystemsData])
+
+  useEffect(() => {
+    if (selectedFilter === "Модулі" && modulesData) {
+      setCatalogItems(modulesData.map(m => m.name));
+    }
+    if (selectedFilter === "Зовнішні системи" && exSystemsData) {
+      setCatalogItems(exSystemsData.map(s => s.name));
+    }
+  }, [selectedFilter, modulesData, exSystemsData]);
 
   const [viewNames] = useState<Record<string, string>>({
     root: "Spaceship Builder",
@@ -123,6 +147,12 @@ export default function Project() {
 
   return (
     <div className="project__content_container">
+      {settingsOpen && id && (
+        <ProjectWrapper
+          projectId={String(id)}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
       <Navbar
         topName={projectData?.name}
         prevName={prevView ? viewNames[prevView] : undefined}
@@ -133,6 +163,10 @@ export default function Project() {
         <DndContext onDragEnd={handleDragEnd}>
           <Catalog
             items={catalogItems}
+            firstButton="Модулі"
+            secondButton="Зовнішні системи"
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
             onItemRemove={id => setCatalogItems(prev => prev.filter(i => i !== id))}
           />
 
