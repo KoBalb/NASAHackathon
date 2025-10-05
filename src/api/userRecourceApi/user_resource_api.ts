@@ -23,5 +23,5 @@ export async function updateUserResource(id: number, data: Partial<Omit<UserReso
 }
 
 export async function deleteUserResource(id: number): Promise<void> {
-  await api.delete(`user/resources/${id}/`);
+  await api.delete(`/user/resources/${id}/`);
 }

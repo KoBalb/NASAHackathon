@@ -1,0 +1,54 @@
+.material-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.material-modal-content {
+  background: #1c1f26;
+  border-radius: 15px;
+  width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: white;
+  padding: 20px 30px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header h2 {
+  font-size: 22pt;
+  font-weight: bold;
+  font-family: "Monterchi-Sans", sans-serif;
+}
+
+.close-btn {
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 20pt;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+  color: red;
+}
+
+.material-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}

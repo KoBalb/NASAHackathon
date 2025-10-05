@@ -11,12 +11,27 @@ import { useProject } from "../../../hooks/Projectshooks/project_hooks";
 import { useExternalSystems, useUpdateExternalSystem } from "../../../hooks/Externalsystemshooks/external_systems_hooks";
 
 import { ProjectWrapper } from "../../../wrappers/project_form_wrapper";
+<<<<<<< HEAD
 import { useParams, useNavigate } from "react-router-dom";
+=======
+
+import { useParams } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
+
+import { useEffect } from "react";
+import MaterialModal from "../../../wrappers/resourceListModal";
+>>>>>>> cb4ba7bcf43fec359fac7fcfaf2a3d91642d55e3
 
 const INITIAL_GRID = Array(12).fill(null);
 const ROW_SIZE = 4;
 
 export default function Project() {
+<<<<<<< HEAD
+=======
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+>>>>>>> cb4ba7bcf43fec359fac7fcfaf2a3d91642d55e3
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
   const id = projectId ? Number(projectId) : undefined;
@@ -179,9 +194,9 @@ export default function Project() {
       <Navbar
         topName={projectData?.name}
         prevName={prevView ? viewNames[prevView] : undefined}
-        onBackClick={goBack}
-        onSettingsClick={() => setSettingsOpen(true)}
+        onBackClick={goBack} onOpenResources={() => setIsModalOpen(true)}
       />
+      {isModalOpen && <MaterialModal onClose={() => setIsModalOpen(false)} />}
       <div className="project__content_main">
         <DndContext onDragEnd={handleDragEnd} collisionDetection={rectIntersection}>
           <Catalog
@@ -195,6 +210,11 @@ export default function Project() {
             <div className="zoom-toolbar">
               {viewStack.length > 1 && <button className="project__back_btn" onClick={goBack}>🔙 Back</button>}
             </div>
+<<<<<<< HEAD
+=======
+            
+
+>>>>>>> cb4ba7bcf43fec359fac7fcfaf2a3d91642d55e3
             <div className="zoom-wrapper">
               <AnimatePresence mode="wait">
                 <motion.div
