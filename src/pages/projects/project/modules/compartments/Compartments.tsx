@@ -1,4 +1,4 @@
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, rectIntersection } from "@dnd-kit/core";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -9,9 +9,12 @@ import "../../../../../components/project/ProjectPage.css";
 
 import { useModule } from "../../../../../hooks/Moduleshooks/modules_hooks";
 import { useCompartment } from "../../../../../hooks/Compartmentshooks/compartments_hooks";
-import { useZones } from "../../../../../hooks/Zoneshooks/zones_hooks";
+import { useZones, useUpdateZone } from "../../../../../hooks/Zoneshooks/zones_hooks";
 
 import { useParams, useNavigate } from "react-router-dom";
+
+const INITIAL_GRID = Array(12).fill(null);
+const ROW_SIZE = 4;
 
 type CompartmentsHrefIdTypization = {
     projectId: string;
@@ -19,7 +22,7 @@ type CompartmentsHrefIdTypization = {
     compartmentId: string;
 };
 
-function Compartments() {
+export default function Compartments() {
     const { projectId, moduleId, compartmentId } = useParams<CompartmentsHrefIdTypization>();
     const navigate = useNavigate();
 
@@ -31,34 +34,50 @@ function Compartments() {
     const { data: moduleData } = useModule(projectPk as number, modulePk as number);
     const { data: zonesData } = useZones(projectPk as number, modulePk as number, compartmentPk as number);
 
-    const INITIAL_GRID = Array(12).fill(null);
+    const updateZone = useUpdateZone(projectPk as number, modulePk as number, compartmentPk as number);
 
-    const [views, setViews] = useState<Record<string, (string | null)[]>>({
-        root: [...INITIAL_GRID],
-    });
-
+    const [views, setViews] = useState<Record<string, (string | null)[]>>({ root: [...INITIAL_GRID] });
+    const [itemDimensions, setItemDimensions] = useState<Record<string, { width: number; height: number }>>({});
     const [catalogItems, setCatalogItems] = useState<string[]>([]);
-    const [viewNames, setViewNames] = useState<Record<string, string>>({
-        root: "Compartment",
-    });
+    const [viewNames, setViewNames] = useState<Record<string, string>>({ root: "Compartment" });
 
-    const [selectedCompartmentId, setSelectedCompartmentId] = useState<number | null>(null);
-
+    // Инициализация каталога и сетки
     useEffect(() => {
-        if (zonesData && Array.isArray(zonesData)) {
-            setCatalogItems(zonesData.map((z) => z.name));
-            setViews({ root: [...INITIAL_GRID] });
+        if (!zonesData) return;
+
+        const dimensions: Record<string, { width: number; height: number }> = {};
+        const newGrid: (string | null)[] = [...INITIAL_GRID];
+
+        setCatalogItems(zonesData.filter(z => !z.x && !z.y).map(z => z.name));
+
+        for (const z of zonesData) {
+            dimensions[z.name] = { width: z.w, height: z.h };
+
+            if (z.x && z.y) {
+                const x0 = z.x - 1;
+                const y0 = z.y - 1;
+                for (let h = 0; h < z.h; h++) {
+                    for (let w = 0; w < z.w; w++) {
+                        const index = (y0 + h) * ROW_SIZE + (x0 + w);
+                        if (index < newGrid.length && x0 + w < ROW_SIZE) newGrid[index] = z.name;
+                    }
+                }
+            }
         }
+
+        setItemDimensions(prev => ({ ...prev, ...dimensions }));
+        setViews({ root: newGrid });
     }, [zonesData]);
 
+    // Обновление navbar title
     useEffect(() => {
-        if (compData?.name) {
-            setViewNames((prev) => ({ ...prev, root: compData.name }));
-        }
+        if (compData?.name) setViewNames(prev => ({ ...prev, root: compData.name }));
     }, [compData]);
 
     function handleZoneDoubleClick(index: number) {
-        const zone = zonesData?.[index]; // get the zone corresponding to the clicked grid item
+        const label = views.root[index];
+        if (!label) return;
+        const zone = zonesData?.find(z => z.name === label);
         if (!zone) return;
 
         navigate(
@@ -66,79 +85,95 @@ function Compartments() {
         );
     }
 
-    useEffect(() => {
-        if (!selectedCompartmentId || !zonesData) return;
-
-        if (zonesData.length > 0) {
-            // ✅ Navigate to the first zone
-            navigate(
-                `/projects/${projectPk}/modules/${modulePk}/compartments/${selectedCompartmentId}/zones/${zonesData[0].id}`
-            );
-        } else {
-            // ❌ No zones exist, cannot navigate; maybe show toast or placeholder
-            console.warn("No zones exist for this compartment");
-        }
-
-        setSelectedCompartmentId(null);
-    }, [zonesData, selectedCompartmentId, navigate, projectPk, modulePk]);
-
-
     function handleDragEnd(event: any) {
         const { active, over } = event;
         const activeData = active?.data?.current ?? {};
         const label = activeData.label ?? active?.id;
-        const srcView = activeData.viewId;
-        const srcIndex = activeData.index;
+        const fromGrid = activeData.fromGrid;
 
         const overId: string | undefined = over?.id;
         const destMatch = overId ? overId.match(/^(.+)-square-(\d+)$/) : null;
         const destView = destMatch ? destMatch[1] : undefined;
         const destIndex = destMatch ? Number(destMatch[2]) : undefined;
 
-        setViews((prev) => {
-            const copy: Record<string, (string | null)[]> = { ...prev };
+        const { width = 1, height = 1 } = itemDimensions[label] || {};
+        const zone = zonesData?.find(z => z.name === label);
+        if (!zone) return;
 
-            if (activeData.fromGrid && srcView && typeof srcIndex === "number") {
-                const arr = [...(copy[srcView] ?? [])];
-                arr[srcIndex] = null;
-                copy[srcView] = arr;
+        setViews(prev => {
+            const copy = { ...prev };
+
+            // Удаляем старый блок
+            const srcArr = [...(copy.root ?? [])];
+            for (let i = 0; i < srcArr.length; i++) {
+                if (srcArr[i] === label) srcArr[i] = null;
+            }
+            copy.root = srcArr;
+
+            // Выкинули за пределы → каталог
+            if (!destView || typeof destIndex !== "number") {
+                if (fromGrid) setCatalogItems(prev => (prev.includes(label) ? prev : [...prev, label]));
+                updateZone.mutate({ id: zone.id, data: { ...zone, x: 0, y: 0 } });
+                return copy;
             }
 
-            if (destView && typeof destIndex === "number") {
-                const destArr = [...(copy[destView] ?? [...INITIAL_GRID])];
-                if (!destArr[destIndex]) {
-                    destArr[destIndex] = label;
-                    copy[destView] = destArr;
+            const destArr = [...(copy[destView] ?? Array(12).fill(null))];
+
+            // Определяем верхний левый квадрат блока
+            const colStart = destIndex % ROW_SIZE;
+            const rowStart = Math.floor(destIndex / ROW_SIZE);
+
+            // Проверка, что блок влезает и клетки пустые
+            let fits = true;
+            for (let h = 0; h < height; h++) {
+                const rowOffset = (rowStart + h) * ROW_SIZE;
+                for (let w = 0; w < width; w++) {
+                    const idx = rowOffset + colStart + w;
+                    if (colStart + w >= ROW_SIZE || idx >= destArr.length || destArr[idx] !== null) {
+                        fits = false;
+                        break;
+                    }
+                }
+                if (!fits) break;
+            }
+            if (!fits) return prev;
+
+            // Заполняем сетку
+            for (let h = 0; h < height; h++) {
+                const rowOffset = (rowStart + h) * ROW_SIZE;
+                for (let w = 0; w < width; w++) {
+                    destArr[rowOffset + colStart + w] = label;
                 }
             }
+            copy[destView] = destArr;
+
+            // Удаляем из каталога
+            if (!fromGrid) setCatalogItems(prev => prev.filter(i => i !== label));
+
+            // Сохраняем позицию
+            updateZone.mutate({ id: zone.id, data: { ...zone, x: colStart + 1, y: rowStart + 1 } });
 
             return copy;
         });
-
-        if (!activeData.fromGrid && destView && typeof destIndex === "number") {
-            setCatalogItems((prev) => prev.filter((i) => i !== label));
-        }
-
-        if (!over && activeData.fromGrid) {
-            setCatalogItems((prev) => [...prev, label]);
-        }
     }
+
 
     return (
         <div className="project__content_container">
             <Navbar
                 topName={viewNames.root}
-                prevName={moduleData?.name}   // ✅ show module name as "previous"
+                prevName={moduleData?.name}
                 onBackClick={() => navigate(`/projects/${projectPk}/modules/${modulePk}`)}
             />
 
             <div className="project__content_main">
-                <DndContext onDragEnd={handleDragEnd}>
+                <DndContext onDragEnd={handleDragEnd} collisionDetection={rectIntersection}>
                     <Catalog
                         items={catalogItems}
-                        onItemRemove={(id) => setCatalogItems((prev) => prev.filter((i) => i !== id))}
+                        firstButton="Зони"
+                        selectedFilter="Зони"
+                        onFilterChange={() => { }}
                     />
-
                     <div className="main__content">
                         <div className="zoom-wrapper">
                             <AnimatePresence mode="wait">
@@ -152,6 +187,8 @@ function Compartments() {
                                     <Grid
                                         viewId="root"
                                         items={views.root}
+                                        itemDimensions={itemDimensions}
+                                        rowSize={ROW_SIZE} // <-- передаём ROW_SIZE сюда
                                         onSquareDoubleClick={handleZoneDoubleClick}
                                     />
                                 </motion.div>
@@ -163,5 +200,3 @@ function Compartments() {
         </div>
     );
 }
-
-export default Compartments;

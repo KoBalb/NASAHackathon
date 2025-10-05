@@ -5,6 +5,7 @@ import DesriptionCard from "../../components/home/DescriptionCard/DescriptionCar
 import TextBlock from "../../components/home/TextBlock/TextBlock";
 import PhotoCard from "../../components/home/PhotoCard/PhotoCard";
 import "../../components/general/PageStyles.css";
+import MaterialModal from "../../wrappers/resourceListModal";
 
 function Home() {
     return (

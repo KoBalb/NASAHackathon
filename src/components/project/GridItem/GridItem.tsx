@@ -1,4 +1,3 @@
-// GridItem.tsx
 import "./GridItem.css";
 
 type GridItemProps = {
