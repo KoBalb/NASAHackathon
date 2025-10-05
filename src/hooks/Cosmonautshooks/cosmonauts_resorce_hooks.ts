@@ -25,7 +25,7 @@ export function useDefaultResource(cosmonautId: number, id: number) {
 export function useCreateDefaultResource(cosmonautId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<CosmonautDefaultResource, "id">) => createDefaultResource(cosmonautId, data),
+    mutationFn: (data: CosmonautDefaultResource) => createDefaultResource(cosmonautId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["default-resources", cosmonautId] });
     },
@@ -33,14 +33,14 @@ export function useCreateDefaultResource(cosmonautId: number) {
 }
 
 // Обновление
-export function useUpdateDefaultResource(cosmonautId: number, id: number) {
+export function useUpdateDefaultResource(cosmonautId: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Omit<CosmonautDefaultResource, "id">>) =>
-      updateDefaultResource(cosmonautId, id, data),
-    onSuccess: () => {
+    mutationFn: (data: Partial<CosmonautDefaultResource>) =>
+      updateDefaultResource(cosmonautId, data.id, data),
+    onSuccess: (_, data: CosmonautDefaultResource) => {
       queryClient.invalidateQueries({ queryKey: ["default-resources", cosmonautId] });
-      queryClient.invalidateQueries({ queryKey: ["default-resource", cosmonautId, id] });
+      queryClient.invalidateQueries({ queryKey: ["default-resource", cosmonautId, data.id] });
     },
   });
 }

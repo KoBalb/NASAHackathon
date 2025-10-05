@@ -1,7 +1,23 @@
-/* Тут стилі для наших фотокарток */
 .photo-card {
   border-radius: 30px;
-  background-color: blueviolet;
+  background-color: #3a3a6a;
   height: 250px;
   width: 250px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.photo-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+}
+
+.photo-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* делает фото адаптивным */
 }

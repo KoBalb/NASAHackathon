@@ -186,7 +186,12 @@ export default function Project() {
 
   return (
     <div className="project__content_container">
-      {settingsOpen && id && <ProjectWrapper projectId={String(id)} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && id && (
+        <ProjectWrapper
+          projectId={String(id)}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
       <Navbar
         topName={projectData?.name}
         prevName={viewNames.root}
