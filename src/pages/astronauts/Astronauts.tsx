@@ -1,20 +1,11 @@
-import { useState } from "react";
-import ResourceModal from "../../components/ResourceForm/Resourceform";
 
 
 function Astronauts() {
-    const [modalOpen, setModalOpen] = useState(false);
-    return( <>
-      <button onClick={() => setModalOpen(true)}>
-        Добавить ресурс
-      </button>
+        return (
+        <div>
+            <h1>Astronauts Page</h1>
+        </div>
+    );
+};
 
-      {modalOpen && (
-        <ResourceModal 
-          onClose={() => setModalOpen(false)} 
-        />
-      )}
-    </>
-  );
-}
 export default Astronauts;
