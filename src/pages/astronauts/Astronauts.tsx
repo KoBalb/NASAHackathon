@@ -1,7 +1,8 @@
+
 import NavigationBar from "../../components/general/NavBar";
-import "../../components/general/PageStyles.css";
-import AstroSearchBar from "../../components/astronauts/AstroSearchBar/AstroSearchBar";
 import AstroBar from "../../components/astronauts/AstroCards/AstroBar";
+import AstroSearchBar from "../../components/astronauts/AstroSearchBar/AstroSearchBar";
+
 
 function Astronauts() {
   return (
@@ -14,5 +15,4 @@ function Astronauts() {
     </div>
   );
 }
-
 export default Astronauts;
