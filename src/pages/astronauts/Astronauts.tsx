@@ -1,20 +1,23 @@
-import NavigationBar from "../../components/general/NavBar";
-import "../../components/general/PageStyles.css";
-import AstroSearchBar from "../../components/astronauts/AstroSearchBar/AstroSearchBar";
-import AstroBar from "../../components/astronauts/AstroCards/AstroBar";
+import { useState } from "react";
 
+import ResourceForm from "../../components/ResourceForm/Resourceform";
 
 
 function Astronauts() {
-    return (
-        <div className="home-page">
-            <NavigationBar />
-            <main>
-                <AstroSearchBar />
-                <AstroBar />
-            </main>
-        </div>
-    )
-}
+        
 
+    const [modalOpen, setModalOpen] = useState(false);
+    return( <>
+      <button onClick={() => setModalOpen(true)}>
+        Дasdddddddddddddddddd
+      </button>
+        
+      {modalOpen && (
+        <ResourceForm 
+          onClose={() => setModalOpen(false)} 
+        />
+      )}
+    </>
+  );
+}
 export default Astronauts;
