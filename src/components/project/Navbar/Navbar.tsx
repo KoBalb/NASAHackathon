@@ -9,7 +9,7 @@ type NavProps = {
   onSettingsClick?: () => void;  // 👈 new
 };
 
-export default function Navbar({ topName, prevName, onBackClick, onSettingsClick }: NavProps) {
+export default function Navbar({ topName, prevName, onBackClick, onSettingsClick, onOpenResources }: NavProps) {
 
   return (
     <nav className="project__navbar_container">
