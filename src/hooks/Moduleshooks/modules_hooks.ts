@@ -28,11 +28,12 @@ export function useCreateModule(projectPk: number) {
   });
 }
 
-export function useUpdateModule(projectPk: number, id: number) {
+export function useUpdateModule(projectPk: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Module) => updateModule(projectPk, id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data }: { id: number; data: Module }) =>
+      updateModule(projectPk, id, data),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["module", projectPk, id] });
       queryClient.invalidateQueries({ queryKey: ["modules", projectPk] });
     },

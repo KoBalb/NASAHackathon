@@ -28,12 +28,12 @@ export function useCreateCompartment(projectPk: number, modulePk: number) {
   });
 }
 
-export function useUpdateCompartment(projectPk: number, modulePk: number, id: number) {
+export function useUpdateCompartmentFlexible(projectPk: number, modulePk: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Compartment) => updateCompartment(projectPk, modulePk, id, data),
+    mutationFn: ({ id, data }: { id: number; data: Compartment }) =>
+      updateCompartment(projectPk, modulePk, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["compartment", projectPk, modulePk, id] });
       queryClient.invalidateQueries({ queryKey: ["compartments", projectPk, modulePk] });
     },
   });
