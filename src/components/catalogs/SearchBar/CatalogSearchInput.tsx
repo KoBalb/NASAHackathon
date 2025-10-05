@@ -4,7 +4,7 @@ function CatalogSearchInput() {
   return (
     <input
       type="text"
-      placeholder="Пошук проєктів..."
+      placeholder="Пошук каталогів..."
       className="search-input"
     />
   );
