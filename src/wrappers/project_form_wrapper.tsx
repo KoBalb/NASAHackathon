@@ -2,8 +2,6 @@ import React from "react";
 import { useProject } from "../hooks/Projectshooks/project_hooks";
 import CreateProjectModal from "../components/modalform/modal";
 
-
-
 interface ProjectWrapperProps {
   projectId: string;
   onClose: () => void;
