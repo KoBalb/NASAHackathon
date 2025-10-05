@@ -1,11 +1,16 @@
-import "./PhotoCardStyle.css"
+import "./PhotoCardStyle.css";
 
-function PhotoCard() {
-    return (
-        <div className="photo-card">
+interface PhotoCardProps {
+  src: string;   // путь к изображению
+  alt?: string;  // альтернативный текст (необязательно)
+}
 
-        </div>
-    )
+function PhotoCard({ src, alt = "Фото" }: PhotoCardProps) {
+  return (
+    <div className="photo-card">
+      <img src={src} alt={alt} className="photo-card__image" />
+    </div>
+  );
 }
 
 export default PhotoCard;
