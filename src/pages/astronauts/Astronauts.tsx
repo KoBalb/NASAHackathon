@@ -4,6 +4,7 @@ import AstroSearchBar from "../../components/astronauts/AstroSearchBar/AstroSear
 import AstroBar from "../../components/astronauts/AstroCards/AstroBar";
 
 
+
 function Astronauts() {
     return (
         <div className="home-page">

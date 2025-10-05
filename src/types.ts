@@ -210,3 +210,17 @@ export interface Teg {
   id: number;
   name: string;
 }
+
+
+export interface Cosmonaut {
+  id: number;
+  name: string;
+  photo: string;
+}
+
+export interface CosmonautDefaultResource {
+  id: number;
+  resource: number;
+  value: number;
+  is_disposable: boolean;
+}
