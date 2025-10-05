@@ -5,7 +5,12 @@ import DesriptionCard from "../../components/home/DescriptionCard/DescriptionCar
 import TextBlock from "../../components/home/TextBlock/TextBlock";
 import PhotoCard from "../../components/home/PhotoCard/PhotoCard";
 import "../../components/general/PageStyles.css";
-import MaterialModal from "../../wrappers/resourceListModal";
+import JekWolf from "../../components/images/JekVolk.jpg";
+import Koval from "../../components/images/Koval.jpg";
+import Elessar from "../../components/images/Elessar.jpg";
+import Tatiana from "../../components/images/Tatiana.jpg";
+import Mois from "../../components/images/Mois.jpg";
+import Nekit from "../../components/images/Nekita.jpg";
 
 function Home() {
     return (
@@ -27,12 +32,12 @@ function Home() {
                 <Header>Хто ми?</Header>
                 <div className="flex-container">
                     <div className="cards-flex">
-                        <PhotoCard />
-                        <PhotoCard />
-                        <PhotoCard />
-                        <PhotoCard />
-                        <PhotoCard />
-                        <PhotoCard />
+                        <PhotoCard src={JekWolf} alt="Тімлід"/>
+                        <PhotoCard src={Koval} alt="Чєлік"/>
+                        <PhotoCard src={Elessar} alt="Чєлік"/>
+                        <PhotoCard src={Tatiana} alt="Чєлік"/>
+                        <PhotoCard src={Mois} alt="Чєлік"/>
+                        <PhotoCard src={Nekit} alt="Чєлік"/>
                     </div>
                     <div className="about-us">
                         <TextBlock>Ми — команда NovaVision, студенти-ентузіасти з університету. Створили цей сайт, щоб зробити космос ближчим і цікавішим для кожного.</TextBlock>
