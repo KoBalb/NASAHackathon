@@ -91,10 +91,12 @@ function Zones() {
 
             <div className="project__content_main">
                 <DndContext onDragEnd={handleDragEnd}>
-                    {/* Catalogue is still rendered, just empty */}
                     <Catalog
                         items={[]}
                         onItemRemove={() => {}}
+                        firstButton="Компоненти"
+                        onFilterChange={() => {}}
+                        selectedFilter="Компоненти"
                     />
 
                     <div className="main__content">

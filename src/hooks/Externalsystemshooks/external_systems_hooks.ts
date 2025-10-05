@@ -28,12 +28,13 @@ export function useCreateExternalSystem(projectPk: string) {
   });
 }
 
-export function useUpdateExternalSystem(projectPk: string, id: number) {
+export function useUpdateExternalSystem(projectPk: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: ExternalSystem) => updateExternalSystem(projectPk, id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["external-system", projectPk, id] });
+    mutationFn: ({ id, data }: { id: number; data: ExternalSystem }) =>
+      updateExternalSystem(projectPk, id, data),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["external-system", projectPk, variables.id] });
       queryClient.invalidateQueries({ queryKey: ["external-systems", projectPk] });
     },
   });

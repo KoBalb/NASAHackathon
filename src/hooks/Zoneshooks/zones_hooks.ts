@@ -28,11 +28,14 @@ export function useCreateZone(projectPk: number, modulePk: number, compartmentPk
   });
 }
 
-export function useUpdateZone(projectPk: number, modulePk: number, compartmentPk: number, id: number) {
+export function useUpdateZone(projectPk: number, modulePk: number, compartmentPk: number) {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (data: Zone) => updateZone(projectPk, modulePk, compartmentPk, id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data }: { id: number; data: Zone }) =>
+      updateZone(projectPk, modulePk, compartmentPk, id, data),
+    onSuccess: (_, variables) => {
+      const id = variables.id;
       queryClient.invalidateQueries({ queryKey: ["zone", projectPk, modulePk, compartmentPk, id] });
       queryClient.invalidateQueries({ queryKey: ["zones", projectPk, modulePk, compartmentPk] });
     },
