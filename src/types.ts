@@ -201,3 +201,12 @@ export interface UserResource {
   is_stock_percentage: boolean;
   is_default: boolean;
 }
+
+export interface TegProject {
+  id: number;
+  name: string;
+}
+export interface Teg {
+  id: number;
+  name: string;
+}
