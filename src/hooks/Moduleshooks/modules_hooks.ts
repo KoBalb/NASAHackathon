@@ -33,9 +33,10 @@ export function useUpdateModule(projectPk: number) {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: Module }) =>
       updateModule(projectPk, id, data),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["module", projectPk, id] });
+    onSuccess: (_data, variables) => { // <- здесь variables
+      queryClient.invalidateQueries({ queryKey: ["module", projectPk, variables.id] });
       queryClient.invalidateQueries({ queryKey: ["modules", projectPk] });
+      console.log(`[${new Date().toISOString()}] Module updated`, variables);
     },
   });
 }
