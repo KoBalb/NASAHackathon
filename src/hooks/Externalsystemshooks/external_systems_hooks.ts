@@ -36,6 +36,7 @@ export function useUpdateExternalSystem(projectPk: string) {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["external-system", projectPk, variables.id] });
       queryClient.invalidateQueries({ queryKey: ["external-systems", projectPk] });
+      console.log(`[${new Date().toISOString()}] External system updated`, variables);
     },
   });
 }
