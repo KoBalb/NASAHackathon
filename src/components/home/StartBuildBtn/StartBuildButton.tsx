@@ -1,12 +1,13 @@
 import "./StartBuildButtonStyle.css"
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 
 function StartBuildButton() {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <button
+    <button onClick={() => navigate("/projects")}
       className={`build-btn ${hovered ? "pulse" : ""}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -15,7 +16,5 @@ function StartBuildButton() {
     </button>
   );
 }
-
-
 
 export default StartBuildButton;
