@@ -175,3 +175,29 @@ export type ProjectSettings = {
   "max_weight": number,
   "max_price": number
 };
+
+export interface Mission {
+  id?: number,
+  name: "string",
+  days: 9223372036854776000,
+  description: "string",
+  crew_number: 9223372036854776000
+}
+
+export interface Material {
+  id?: number;
+  name: string;
+  photo: string;
+}
+
+export interface UserResource {
+  id: number;
+  name: string;
+  icon: string;
+  measurement: string;
+  limit: number;
+  is_limit_type_big: boolean;
+  stock: number;
+  is_stock_percentage: boolean;
+  is_default: boolean;
+}

@@ -10,8 +10,7 @@ function ProjectsBar() {
   console.log("Projects data:", error);
     if (!projects) return <div>Loading...</div>;
     if (error) return <div>Error loading projects</div>;
-  
-  return (
+    return (
     <div className="card-container">
       <CreateProjectCard />
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./SearchStyles.css";
 
 function SearchInput() {
-  const [Search, setSearch] = useState("");
+
   return (
     <input
       type="text"
