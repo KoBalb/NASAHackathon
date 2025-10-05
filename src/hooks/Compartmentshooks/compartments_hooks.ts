@@ -28,12 +28,15 @@ export function useCreateCompartment(projectPk: number, modulePk: number) {
   });
 }
 
-export function useUpdateCompartmentFlexible(projectPk: number, modulePk: number) {
+export function useUpdateCompartment(projectPk: number, modulePk: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Compartment }) =>
-      updateCompartment(projectPk, modulePk, id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data }: { id: number; data: Compartment }) => {
+      if (projectPk == null || modulePk == null) throw new Error("Project or module ID missing");
+      return updateCompartment(projectPk, modulePk, id, data);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["compartment", projectPk, modulePk, variables.id] });
       queryClient.invalidateQueries({ queryKey: ["compartments", projectPk, modulePk] });
     },
   });

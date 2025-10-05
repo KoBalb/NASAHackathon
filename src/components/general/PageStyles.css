@@ -11,6 +11,7 @@
   display: flex;
   flex-flow: column wrap;
   align-items: center;
+  padding-bottom: 50px;
 }
 
 .des-card-container {

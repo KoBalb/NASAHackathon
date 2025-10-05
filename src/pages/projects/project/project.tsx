@@ -1,6 +1,7 @@
 import { DndContext, rectIntersection } from "@dnd-kit/core";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import Navbar from "../../../components/project/Navbar/Navbar";
 import Catalog from "../../../components/project/Catalog/Catalog";
 import Grid from "../../../components/project/Grid/Grid";
@@ -8,23 +9,29 @@ import "../../../components/project/ProjectPage.css";
 
 import {
   useModules,
+  useCreateModule,
   useUpdateModule,
+  useDeleteModule
 } from "../../../hooks/Moduleshooks/modules_hooks";
 import { useProject } from "../../../hooks/Projectshooks/project_hooks";
-import {
-  useExternalSystems,
-  useUpdateExternalSystem,
-} from "../../../hooks/Externalsystemshooks/external_systems_hooks";
+import { useCatalogsQuery } from "../../../hooks/Catalogshooks/catalogs_hooks";
 
-import { ProjectWrapper } from "../../../wrappers/project_form_wrapper";
 import { useParams, useNavigate } from "react-router-dom";
 import MaterialModal from "../../../wrappers/resourceListModal";
+import { ProjectWrapper } from "../../../wrappers/project_form_wrapper";
 
-const INITIAL_GRID = Array(12).fill(null);
 const ROW_SIZE = 4;
+const INITIAL_GRID = Array(12).fill(null);
 
 export default function Project() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [views, setViews] = useState<Record<string, (any | null)[]>>({ root: [...INITIAL_GRID] });
+  const [itemDimensions, setItemDimensions] = useState<Record<string, { width: number; height: number }>>({});
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("Модулі");
+  const [availableModules, setAvailableModules] = useState<any[]>([]);
+  const [viewStack] = useState<string[]>(["root"]);
+  const [viewNames] = useState<Record<string, string>>({ root: "Spaceship Builder" });
 
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
@@ -32,225 +39,197 @@ export default function Project() {
 
   const { data: modulesData } = useModules(id as number);
   const { data: projectData } = useProject(id as number);
-  const { data: exSystemsData } = useExternalSystems(String(id));
+  const { data: catalogsData } = useCatalogsQuery();
 
   const { mutate: updateModule } = useUpdateModule(id as number);
-  const { mutate: updateExternalSystem } = useUpdateExternalSystem(String(id));
+  const { mutate: createModule } = useCreateModule(id as number);
+  const { mutate: deleteModule } = useDeleteModule(id as number);
 
-  const [views, setViews] = useState<Record<string, (string | null)[]>>({
-    root: [...INITIAL_GRID],
-  });
-  const [itemDimensions, setItemDimensions] = useState<
-    Record<string, { width: number; height: number }>
-  >({});
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Модулі");
-  const [viewStack] = useState<string[]>(["root"]);
-  const [availableModules, setAvailableModules] = useState<string[]>([]);
-  const [availableExSystems, setAvailableExSystems] = useState<string[]>([]);
-  const [viewNames] = useState<Record<string, string>>({
-    root: "Spaceship Builder",
-  });
+  // Создаем мапу catalogId -> photo
+  const catalogPhotoMap = catalogsData?.reduce<Record<number, string>>((acc, c) => {
+    if (c.type === "MO") acc[c.id] = c.photo ?? "";
+    return acc;
+  }, {}) ?? {};
 
-  // Initialize grid & dimensions
+  // Initialize grid and available modules
   useEffect(() => {
+    const newGrid: (any | null)[] = [...INITIAL_GRID];
     const dimensions: Record<string, { width: number; height: number }> = {};
-    const newGrid: (string | null)[] = [...INITIAL_GRID];
 
-    const processItem = (item: any) => {
-      dimensions[item.name] = { width: item.w, height: item.h };
-      // If server x=0, y=0 → catalog
-      const inGrid = item.x && item.y ? true : false;
-      if (!inGrid) return;
-      const x0 = (item.x ?? 1) - 1; // 1-based → 0-based
-      const y0 = (item.y ?? 1) - 1;
-      for (let h = 0; h < item.h; h++) {
-        for (let w = 0; w < item.w; w++) {
-          const index = (y0 + h) * ROW_SIZE + (x0 + w);
-          if (index < newGrid.length) newGrid[index] = item.name;
-        }
-      }
-    };
+    modulesData?.forEach(item => {
+      const dim = { width: item.w ?? 1, height: item.h ?? 1 };
+      dimensions[item.name] = dim;
 
-    if (modulesData) {
-      setAvailableModules(
-        modulesData.filter((m) => !m.x && !m.y).map((m) => m.name)
-      );
-      modulesData.forEach(processItem);
-    }
+      const photo = catalogPhotoMap[item.catalog] ?? "";
 
-    if (exSystemsData) {
-      setAvailableExSystems(
-        exSystemsData.filter((s) => !s.x && !s.y).map((s) => s.name)
-      );
-      exSystemsData.forEach(processItem);
-    }
-
-    setItemDimensions((prev) => ({ ...prev, ...dimensions }));
-    setViews({ root: newGrid });
-  }, [modulesData, exSystemsData]);
-
-  const currentView = viewStack[viewStack.length - 1];
-  const prevView =
-    viewStack.length > 1 ? viewStack[viewStack.length - 2] : null;
-
-  function pushChildView(index: number) {
-    const itemName = views[currentView]?.[index];
-    if (!itemName) return;
-    const module = modulesData?.find((m) => m.name === itemName);
-    if (module) navigate(`/projects/${id}/modules/${module.id}`);
-  }
-
-  function goBack() {
-    navigate("/");
-  }
-
-  function handleDragEnd(event: any) {
-    const { active, over } = event;
-    const activeData = active?.data?.current ?? {};
-    const label = activeData.label ?? active?.id;
-    const srcView = activeData.viewId;
-    const fromGrid = activeData.fromGrid;
-
-    const overId: string | undefined = over?.id;
-    const destMatch = overId ? overId.match(/^(.+)-square-(\d+)$/) : null;
-    const destView = destMatch ? destMatch[1] : undefined;
-    const destIndex = destMatch ? Number(destMatch[2]) : undefined;
-
-    const { width = 1, height = 1 } = itemDimensions[label] || {};
-
-    const movedModule = modulesData?.find((m) => m.name === label);
-    const movedExSystem = exSystemsData?.find((s) => s.name === label);
-
-    setViews((prev) => {
-      const copy = { ...prev };
-
-      // Remove from source grid
-      if (fromGrid && srcView) {
-        const srcArr = [...(copy[srcView] ?? [])];
-        for (let i = 0; i < srcArr.length; i++) {
-          if (srcArr[i] === label) srcArr[i] = null;
-        }
-        copy[srcView] = srcArr;
-      }
-
-      // Dropped outside → catalog
-      if (!destView || typeof destIndex !== "number") {
-        if (fromGrid) {
-          if (selectedFilter === "Модулі")
-            setAvailableModules((prev) =>
-              prev.includes(label) ? prev : [...prev, label]
-            );
-          else
-            setAvailableExSystems((prev) =>
-              prev.includes(label) ? prev : [...prev, label]
-            );
-
-          if (movedModule?.id)
-            updateModule({ id: movedModule.id, data: { x: 0, y: 0 } });
-          if (movedExSystem?.id)
-            updateExternalSystem({
-              id: movedExSystem.id,
-              data: { ...movedExSystem, x: 0, y: 0 },
-            });
-        }
-        return copy;
-      }
-
-      // Dropped on grid → calculate position
-      const colStart = destIndex % ROW_SIZE;
-      const rowStart = Math.floor(destIndex / ROW_SIZE);
-      const totalRows = Math.ceil((copy[destView]?.length ?? 12) / ROW_SIZE);
-
-      // Check if it fits
-      let fits = true;
-      if (colStart + width > ROW_SIZE || rowStart + height > totalRows)
-        fits = false;
-
-      if (fits) {
-        for (let h = 0; h < height; h++) {
-          const rowOffset = (rowStart + h) * ROW_SIZE;
-          for (let w = 0; w < width; w++) {
-            if ((copy[destView]?.[rowOffset + colStart + w] ?? null) !== null) {
-              fits = false;
-              break;
+      if (item.x != null && item.y != null) {
+        const x0 = item.x - 1;
+        const y0 = item.y - 1;
+        for (let h = 0; h < dim.height; h++) {
+          for (let w = 0; w < dim.width; w++) {
+            const index = (y0 + h) * ROW_SIZE + (x0 + w);
+            if (index < newGrid.length) {
+              newGrid[index] = { ...item, serverId: item.id, photo };
             }
           }
-          if (!fits) break;
         }
       }
-
-      if (!fits) return prev;
-
-      const destArr = [...(copy[destView] ?? Array(12).fill(null))];
-      for (let h = 0; h < height; h++) {
-        const rowOffset = (rowStart + h) * ROW_SIZE;
-        for (let w = 0; w < width; w++) {
-          destArr[rowOffset + colStart + w] = label;
-        }
-      }
-      copy[destView] = destArr;
-
-      // Remove from catalog if dragged from there
-      if (!fromGrid) {
-        if (selectedFilter === "Модулі")
-          setAvailableModules((prev) => prev.filter((i) => i !== label));
-        else setAvailableExSystems((prev) => prev.filter((i) => i !== label));
-      }
-
-      // Save to backend (1-based)
-      if (movedModule?.id)
-        updateModule({
-          id: movedModule.id,
-          data: { x: colStart + 1, y: rowStart + 1 },
-        });
-      if (movedExSystem?.id)
-        updateExternalSystem({
-          id: movedExSystem.id,
-          data: { ...movedExSystem, x: colStart + 1, y: rowStart + 1 },
-        });
-
-      return copy;
     });
-  }
+
+    setItemDimensions(dimensions);
+    setViews({ root: newGrid });
+
+    // Available modules with photos
+    setAvailableModules(
+      catalogsData
+        ?.filter(c => c.type === "MO" && !modulesData?.some(m => m.catalog === c.id))
+        .map(c => ({ ...c, photo: c.photo ?? "" })) ?? []
+    );
+  }, [modulesData, catalogsData]);
+
+  const currentView = viewStack[viewStack.length - 1];
+  const goBack = () => navigate("/");
+
+  const pushChildView = (index: number) => {
+    const item = views[currentView]?.[index];
+    if (!item) return;
+    const module = modulesData?.find(m => m.id === item.serverId);
+    if (module) navigate(`/projects/${id}/modules/${module.id}`);
+  };
+
+  const addToAvailableModules = (item: any) => {
+    setAvailableModules(prev => {
+      const newArr = [...prev, item];
+      return newArr.filter((v, i, a) => a.findIndex(x => x.id === v.id) === i);
+    });
+  };
+
+  const handleDragStart = () => {
+    document.body.style.overflow = "hidden";
+  };
+
+  const handleDragEnd = (event: any) => {
+    document.body.style.overflow = "";
+
+    const { active, over } = event;
+    if (!active) return;
+
+    const item = active.data.current.item;
+    if (!item) return;
+
+    const match = over?.id?.match(/^(.+)-square-(\d+)$/);
+    const destIndex = match ? Number(match[2]) : null;
+    const col = destIndex !== null ? (destIndex % ROW_SIZE) + 1 : null;
+    const row = destIndex !== null ? Math.floor(destIndex / ROW_SIZE) + 1 : null;
+
+    const droppedOutsideGrid = !over || !over.id.startsWith(`${currentView}-square-`);
+
+    // Dropped outside grid
+    if (droppedOutsideGrid) {
+      if (item.serverId) {
+        deleteModule(item.serverId, {
+          onSuccess: () => {
+            setViews(prev => {
+              const grid = [...prev[currentView]];
+              for (let i = 0; i < grid.length; i++)
+                if (grid[i]?.serverId === item.serverId) grid[i] = null;
+              return { ...prev, [currentView]: grid };
+            });
+            addToAvailableModules({ ...item, id: item.catalog, photo: catalogPhotoMap[item.catalog] });
+          },
+          onError: err => console.error("Failed to delete module:", err)
+        });
+      } else {
+        addToAvailableModules(item);
+      }
+      return;
+    }
+
+    // New module from catalog
+    if (!item.serverId) {
+      const payload = {
+        orient: item.orient ?? 0,
+        w: item.w ?? 1,
+        h: item.h ?? 1,
+        name: item.name,
+        price: item.price ?? 0,
+        weight: item.weight ?? 0,
+        x: col,
+        y: row,
+        z: item.z ?? 0,
+        catalog: item.id,
+        project: id
+      };
+
+      const photo = catalogPhotoMap[item.id] ?? "";
+
+      createModule(payload, {
+        onSuccess: createdItem => {
+          if (!createdItem.id) return;
+          setViews(prev => {
+            const grid = [...prev[currentView]];
+            for (let h = 0; h < (item.h ?? 1); h++) {
+              for (let w = 0; w < (item.w ?? 1); w++) {
+                const index = (row! - 1 + h) * ROW_SIZE + (col! - 1 + w);
+                if (index < grid.length) {
+                  grid[index] = { ...createdItem, serverId: createdItem.id, photo };
+                }
+              }
+            }
+            return { ...prev, [currentView]: grid };
+          });
+          setAvailableModules(prev => prev.filter(i => i.id !== item.id));
+        },
+      });
+      return;
+    }
+
+    // Move existing module inside grid
+    if (item.serverId) {
+      setViews(prev => {
+        const grid = [...prev[currentView]];
+        for (let i = 0; i < grid.length; i++)
+          if (grid[i]?.serverId === item.serverId) grid[i] = null;
+        if (destIndex !== null) grid[destIndex] = { ...item, x: col, y: row };
+        return { ...prev, [currentView]: grid };
+      });
+
+      updateModule({ id: item.serverId, data: { ...item, x: col, y: row } }, {
+        onSuccess: res => console.log("Module updated:", res),
+        onError: err => console.error("Failed to update module:", err)
+      });
+    }
+  };
 
   return (
     <div className="project__content_container">
       {settingsOpen && id && (
-        <ProjectWrapper
-          projectId={String(id)}
-          onClose={() => setSettingsOpen(false)}
-        />
+        <ProjectWrapper projectId={String(id)} onClose={() => setSettingsOpen(false)} />
       )}
       <Navbar
         topName={projectData?.name}
-        prevName={prevView ? viewNames[prevView] : undefined}
+        prevName={viewNames.root}
         onBackClick={goBack}
         onOpenResources={() => setIsModalOpen(true)}
+        onSettingsClick={() => setSettingsOpen(true)}
       />
       {isModalOpen && <MaterialModal onClose={() => setIsModalOpen(false)} />}
       <div className="project__content_main">
         <DndContext
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           collisionDetection={rectIntersection}
         >
           <Catalog
-            items={
-              selectedFilter === "Модулі"
-                ? availableModules
-                : availableExSystems
-            }
+            items={availableModules}
             firstButton="Модулі"
-            secondButton="Зовнішні системи"
             selectedFilter={selectedFilter}
             onFilterChange={setSelectedFilter}
           />
           <div className="main__content">
             <div className="zoom-toolbar">
               {viewStack.length > 1 && (
-                <button className="project__back_btn" onClick={goBack}>
-                  🔙 Back
-                </button>
+                <button className="project__back_btn" onClick={goBack}>🔙 Back</button>
               )}
             </div>
             <div className="zoom-wrapper">

@@ -6,6 +6,7 @@ body {
 .project__content_main {
   display: flex;
   height: 100%;
+  overflow: hidden;
 }
 
 .project__content_container {

@@ -3,7 +3,7 @@ import "./Grid.css";
 
 type GridProps = {
   viewId: string;
-  items: (string | null)[];
+  items: (any | null)[];
   itemDimensions: Record<string, { width: number; height: number }>;
   rowSize: number;
   onSquareDoubleClick?: (index: number) => void;
@@ -14,28 +14,24 @@ export default function Grid({ viewId, items, itemDimensions, rowSize, onSquareD
 
   return (
     <div className="grid__container">
-      {items.map((label, idx) => {
-        // если эта ячейка уже занята блоком, пропускаем
+      {items.map((item, idx) => {
+        if (!item) return <GridSquare key={`empty-${idx}`} viewId={viewId} index={idx} item={null} />;
+
+        const dimensions = itemDimensions[item.name] || { width: 1, height: 1 };
         if (renderedIndexes.has(idx)) return null;
 
-        if (!label) return <GridSquare key={idx} viewId={viewId} index={idx} item={null} />;
-
-        const dimensions = itemDimensions[label] || { width: 1, height: 1 };
-
-        // добавляем все ячейки, которые занимает блок, в renderedIndexes
         for (let h = 0; h < dimensions.height; h++) {
           for (let w = 0; w < dimensions.width; w++) {
-            const cellIdx = idx + w + h * rowSize;
-            if (cellIdx < items.length) renderedIndexes.add(cellIdx);
+            renderedIndexes.add(idx + w + h * rowSize);
           }
         }
 
         return (
           <GridSquare
-            key={idx}
+            key={item.serverId ?? item.id ?? `grid-${idx}`}
             viewId={viewId}
             index={idx}
-            item={label}
+            item={item}
             dimensions={dimensions}
             onDoubleClick={onSquareDoubleClick}
           />
@@ -48,35 +44,24 @@ export default function Grid({ viewId, items, itemDimensions, rowSize, onSquareD
 type GridSquareProps = {
   viewId: string;
   index: number;
-  item: string | null;
+  item: any | null;
   dimensions?: { width: number; height: number };
   onDoubleClick?: (index: number) => void;
 };
 
 function GridSquare({ viewId, index, item, dimensions, onDoubleClick }: GridSquareProps) {
   const droppableId = `${viewId}-square-${index}`;
-  const { isOver, setNodeRef } = useDroppable({
-    id: droppableId,
-    data: { index, viewId, item },
-  });
+  const { isOver, setNodeRef } = useDroppable({ id: droppableId, data: { index } });
 
   const { attributes, listeners, setNodeRef: setItemRef, transform } = useDraggable({
-    id: item ? `grid-${viewId}-${index}` : `empty-${viewId}-${index}`,
+    id: item ? `grid-${viewId}-${item.id}` : `empty-${viewId}-${index}`,
     disabled: !item,
-    data: { fromGrid: !!item, index, viewId, label: item },
+    data: { item, fromGrid: !!item },
   });
 
-  const itemStyle = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 20 }
-    : {};
-
-  const gridStyle = dimensions
-    ? { gridColumn: `span ${dimensions.width}`, gridRow: `span ${dimensions.height}` }
-    : {};
-
-  const highlightStyle = isOver
-    ? { outline: "2px solid #4caf50", outlineOffset: "-2px" }
-    : {};
+  const itemStyle = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 20 } : {};
+  const gridStyle = dimensions ? { gridColumn: `span ${dimensions.width}`, gridRow: `span ${dimensions.height}` } : {};
+  const highlightStyle = isOver ? { outline: "2px solid #4caf50", outlineOffset: "-2px" } : {};
 
   return (
     <div
@@ -87,7 +72,11 @@ function GridSquare({ viewId, index, item, dimensions, onDoubleClick }: GridSqua
     >
       {item ? (
         <div ref={setItemRef} {...listeners} {...attributes} style={{ ...itemStyle, width: "100%", height: "100%" }}>
-          <div className="grid__item">{item}</div>
+          {item.photo ? (
+            <img src={item.photo} alt={item.name} className="grid__item_photo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          ) : (
+            <div className="grid__item">{item.name}</div>
+          )}
         </div>
       ) : (
         <div className="grid__empty">+</div>

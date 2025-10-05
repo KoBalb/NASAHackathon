@@ -7,186 +7,234 @@ import Catalog from "../../../../components/project/Catalog/Catalog";
 import Grid from "../../../../components/project/Grid/Grid";
 import "../../../../components/project/ProjectPage.css";
 
+import {
+    useCompartments,
+    useCreateCompartment,
+    useUpdateCompartment,
+    useDeleteCompartment,
+} from "../../../../hooks/Compartmentshooks/compartments_hooks";
 import { useModule } from "../../../../hooks/Moduleshooks/modules_hooks";
-import { useCompartments, useUpdateCompartmentFlexible } from "../../../../hooks/Compartmentshooks/compartments_hooks";
 import { useProject } from "../../../../hooks/Projectshooks/project_hooks";
+import { useCatalogsQuery } from "../../../../hooks/Catalogshooks/catalogs_hooks";
 
 import { useParams, useNavigate } from "react-router-dom";
+import MaterialModal from "../../../../wrappers/resourceListModal";
+import { ProjectWrapper } from "../../../../wrappers/project_form_wrapper";
 
-const INITIAL_GRID = Array(12).fill(null);
 const ROW_SIZE = 4;
-
-type ModulesHrefIdTypization = {
-    projectId: string;
-    moduleId: string;
-};
+const INITIAL_GRID = Array(12).fill(null);
 
 export default function Modules() {
-    const { projectId, moduleId } = useParams<ModulesHrefIdTypization>();
-    const navigate = useNavigate();
-
-    const projectPk = projectId ? Number(projectId) : undefined;
-    const modulePk = moduleId ? Number(moduleId) : undefined;
-
-    const { data: compData } = useCompartments(projectPk as number, modulePk as number);
-    const { data: moduleData } = useModule(projectPk as number, modulePk as number);
-    const { data: projectData } = useProject(projectPk as number);
-
-    const updateCompartment = useUpdateCompartmentFlexible(projectPk as number, modulePk as number);
-
-    const [views, setViews] = useState<Record<string, (string | null)[]>>({ root: [...INITIAL_GRID] });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [views, setViews] = useState<Record<string, (any | null)[]>>({ root: [...INITIAL_GRID] });
     const [itemDimensions, setItemDimensions] = useState<Record<string, { width: number; height: number }>>({});
-    const [catalogItems, setCatalogItems] = useState<string[]>([]);
-    const [viewNames, setViewNames] = useState<Record<string, string>>({ root: "Module" });
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const [selectedFilter, setSelectedFilter] = useState("Відсіки");
+    const [availableCompartments, setAvailableCompartments] = useState<any[]>([]);
+    const [viewStack] = useState<string[]>(["root"]);
 
-    // Инициализация каталога и сетки
+    const navigate = useNavigate();
+    const { projectId, moduleId } = useParams<{ projectId: string; moduleId: string }>();
+
+    const projectPk = Number(projectId);
+    const modulePk = Number(moduleId);
+
+    const { data: compartmentsData } = useCompartments(projectPk, modulePk);
+    const { data: moduleData } = useModule(projectPk, modulePk);
+    const { data: projectData } = useProject(projectPk);
+    const { data: catalogsData } = useCatalogsQuery();
+
+    const { mutate: createCompartment } = useCreateCompartment(projectPk, modulePk);
+    const { mutate: updateCompartment } = useUpdateCompartment(projectPk, modulePk);
+    const { mutate: deleteCompartment } = useDeleteCompartment(projectPk, modulePk);
+
+    // 🔹 Мапа catalogId -> photo
+    const catalogPhotoMap = catalogsData?.reduce<Record<number, string>>((acc, c) => {
+        if (c.type === "CM") acc[c.id] = c.photo ?? "";
+        return acc;
+    }, {}) ?? {};
+
     useEffect(() => {
-        if (!compData) return;
+        if (!compartmentsData) return;
+
+        const newGrid: (any | null)[] = Array(
+            Math.max(INITIAL_GRID.length, compartmentsData.length * ROW_SIZE)
+        ).fill(null);
 
         const dimensions: Record<string, { width: number; height: number }> = {};
-        const newGrid: (string | null)[] = [...INITIAL_GRID];
 
-        setCatalogItems(compData.filter(c => !c.x && !c.y).map(c => c.name));
+        compartmentsData.forEach((item) => {
+            dimensions[item.id] = { width: item.w ?? 1, height: item.h ?? 1 };
 
-        for (const c of compData) {
-            dimensions[c.name] = { width: c.w, height: c.h };
+            const photo = catalogPhotoMap[item.catalog] ?? "";
 
-            if (c.x && c.y) {
-                const x0 = c.x - 1;
-                const y0 = c.y - 1;
-                for (let h = 0; h < c.h; h++) {
-                    for (let w = 0; w < c.w; w++) {
-                        const index = (y0 + h) * ROW_SIZE + (x0 + w);
-                        if (index < newGrid.length) newGrid[index] = c.name;
-                    }
-                }
+            if (item.x != null && item.y != null) {
+                const index = (item.y - 1) * ROW_SIZE + (item.x - 1);
+                newGrid[index] = { ...item, serverId: item.id, photo };
             }
+        });
+
+        setItemDimensions(dimensions);
+        setViews({ root: newGrid });
+
+        const newAvailable =
+            catalogsData?.filter(
+                (c) => c.type === "CM" && !compartmentsData.some((m) => m.catalog === c.id)
+            ).map(c => ({ ...c, photo: c.photo ?? "" })) ?? [];
+
+        setAvailableCompartments(newAvailable);
+    }, [compartmentsData, catalogsData]);
+
+    const currentView = viewStack[viewStack.length - 1];
+    const goBack = () => navigate(`/projects/${projectPk}`);
+
+    const pushChildView = (index: number) => {
+        const item = views[currentView]?.[index];
+        if (!item) return;
+        const compartment = compartmentsData?.find((c) => c.id === item.serverId);
+        if (compartment) navigate(`/projects/${projectPk}/modules/${modulePk}/compartments/${compartment.id}`);
+    };
+
+    const addToAvailableCompartments = (item: any) => {
+        setAvailableCompartments((prev) => {
+            const newArr = [...prev, item];
+            return newArr.filter((v, i, a) => a.findIndex((x) => x.id === v.id) === i);
+        });
+    };
+
+    const handleDragStart = () => {
+        document.body.style.overflow = "hidden";
+    };
+
+    const handleDragEnd = (event: any) => {
+        document.body.style.overflow = "";
+
+        const { active, over } = event;
+        const item = active?.data?.current?.item;
+        if (!item) return;
+
+        const match = over?.id?.match(/^(.+)-square-(\d+)$/);
+        const destIndex = match ? Number(match[2]) : null;
+        const col = destIndex !== null ? (destIndex % ROW_SIZE) + 1 : null;
+        const row = destIndex !== null ? Math.floor(destIndex / ROW_SIZE) + 1 : null;
+
+        const droppedOutsideGrid = !over || !over.id.startsWith(`${currentView}-square-`);
+
+        if (droppedOutsideGrid) {
+            if (item.serverId) {
+                deleteCompartment(item.serverId, {
+                    onSuccess: () => {
+                        setViews(prev => {
+                            const grid = [...prev[currentView]];
+                            for (let i = 0; i < grid.length; i++)
+                                if (grid[i]?.serverId === item.serverId) grid[i] = null;
+                            return { ...prev, [currentView]: grid };
+                        });
+                        addToAvailableCompartments({ ...item, id: item.catalog, photo: catalogPhotoMap[item.catalog] });
+                    },
+                });
+            } else {
+                addToAvailableCompartments(item);
+            }
+            return;
         }
 
-        setItemDimensions(prev => ({ ...prev, ...dimensions }));
-        setViews({ root: newGrid });
-    }, [compData]);
+        // Новый отсек из каталога
+        if (!item.serverId) {
+            const payload = {
+                w: item.w ?? 1,
+                h: item.h ?? 1,
+                d: item.d ?? 1,
+                name: item.name,
+                price: item.price ?? 0,
+                weight: item.weight ?? 0,
+                comment: item.comment ?? "",
+                x: col,
+                y: row,
+                z: item.z ?? 0,
+                catalog: item.id,
+                project: projectPk,
+                module: modulePk,
+            };
 
-    // Обновление navbar title
-    useEffect(() => {
-        if (moduleData?.name) setViewNames(prev => ({ ...prev, root: moduleData.name }));
-    }, [moduleData]);
+            const photo = catalogPhotoMap[item.id] ?? "";
 
-    function handleSquareDoubleClick(index: number) {
-        const label = views.root[index];
-        if (!label) return;
-        const comp = compData?.find(c => c.name === label);
-        if (!comp) return;
-        navigate(`/projects/${projectPk}/modules/${modulePk}/compartments/${comp.id}`);
-    }
+            createCompartment(payload, {
+                onSuccess: createdItem => {
+                    if (!createdItem.id) return;
+                    const newItem = { ...createdItem, serverId: createdItem.id, photo, module: modulePk };
+                    setViews(prev => {
+                        const grid = [...prev[currentView]];
+                        if (destIndex !== null) grid[destIndex] = newItem;
+                        return { ...prev, [currentView]: grid };
+                    });
+                    setAvailableCompartments(prev => prev.filter(i => i.id !== item.id));
+                },
+            });
+            return;
+        }
 
-    function handleDragEnd(event: any) {
-        const { active, over } = event;
-        const activeData = active?.data?.current ?? {};
-        const label = activeData.label ?? active?.id;
-        const fromGrid = activeData.fromGrid;
+        // Перемещение существующего отсека
+        if (item.serverId) {
+            setViews(prev => {
+                const grid = [...prev[currentView]];
+                for (let i = 0; i < grid.length; i++) if (grid[i]?.serverId === item.serverId) grid[i] = null;
+                if (destIndex !== null) grid[destIndex] = { ...item, x: col, y: row };
+                return { ...prev, [currentView]: grid };
+            });
 
-        const overId: string | undefined = over?.id;
-        const destMatch = overId ? overId.match(/^(.+)-square-(\d+)$/) : null;
-        const destView = destMatch ? destMatch[1] : undefined;
-        const destIndex = destMatch ? Number(destMatch[2]) : undefined;
-
-        const { width = 1, height = 1 } = itemDimensions[label] || {};
-        const comp = compData?.find(c => c.name === label);
-        if (!comp) return;
-
-        setViews(prev => {
-            const copy = { ...prev };
-
-            // Удаляем из предыдущей сетки
-            if (fromGrid) {
-                const srcArr = [...(copy.root ?? [])];
-                for (let i = 0; i < srcArr.length; i++) {
-                    if (srcArr[i] === label) srcArr[i] = null;
-                }
-                copy.root = srcArr;
-            }
-
-            // Выкинули за пределы → каталог
-            if (!destView || typeof destIndex !== "number") {
-                if (fromGrid) setCatalogItems(prev => (prev.includes(label) ? prev : [...prev, label]));
-                updateCompartment.mutate({ id: comp.id, data: { ...comp, x: 0, y: 0 } });
-                return copy;
-            }
-
-            // Проверяем, влезает ли на сетку
-            const colStart = destIndex % ROW_SIZE;
-            const rowStart = Math.floor(destIndex / ROW_SIZE);
-            const totalRows = Math.ceil((copy[destView]?.length ?? 12) / ROW_SIZE);
-
-            let fits = true;
-            if (colStart + width > ROW_SIZE || rowStart + height > totalRows) fits = false;
-
-            if (fits) {
-                for (let h = 0; h < height; h++) {
-                    const rowOffset = (rowStart + h) * ROW_SIZE;
-                    for (let w = 0; w < width; w++) {
-                        if ((copy[destView]?.[rowOffset + colStart + w] ?? null) !== null) {
-                            fits = false;
-                            break;
-                        }
-                    }
-                    if (!fits) break;
-                }
-            }
-            if (!fits) return prev;
-
-            const destArr = [...(copy[destView] ?? Array(12).fill(null))];
-            for (let h = 0; h < height; h++) {
-                const rowOffset = (rowStart + h) * ROW_SIZE;
-                for (let w = 0; w < width; w++) {
-                    destArr[rowOffset + colStart + w] = label;
-                }
-            }
-            copy[destView] = destArr;
-
-            // Если из каталога → удаляем
-            if (!fromGrid) setCatalogItems(prev => prev.filter(i => i !== label));
-
-            // Сохраняем позицию
-            updateCompartment.mutate({ id: comp.id, data: { ...comp, x: colStart + 1, y: rowStart + 1 } });
-
-            return copy;
-        });
-    }
+            updateCompartment({ id: item.serverId, data: { ...item, x: col, y: row } });
+        }
+    };
 
     return (
         <div className="project__content_container">
+            {settingsOpen && projectPk && (
+                <ProjectWrapper projectId={String(projectPk)} onClose={() => setSettingsOpen(false)} />
+            )}
             <Navbar
-                topName={viewNames.root}
+                topName={moduleData?.name}
                 prevName={projectData?.name}
-                onBackClick={() => navigate(`/projects/${projectPk}`)}
+                onBackClick={goBack}
+                onOpenResources={() => setIsModalOpen(true)}
+                onSettingsClick={() => setSettingsOpen(true)}
             />
-
+            {isModalOpen && <MaterialModal onClose={() => setIsModalOpen(false)} />}
             <div className="project__content_main">
-                <DndContext onDragEnd={handleDragEnd} collisionDetection={rectIntersection}>
+                <DndContext
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    collisionDetection={rectIntersection}
+                >
                     <Catalog
-                        items={catalogItems}
+                        items={availableCompartments}
                         firstButton="Відсіки"
-                        selectedFilter="Відсіки"
-                        onFilterChange={() => { }}
+                        selectedFilter={selectedFilter}
+                        onFilterChange={setSelectedFilter}
                     />
                     <div className="main__content">
+                        <div className="zoom-toolbar">
+                            {viewStack.length > 1 && (
+                                <button className="project__back_btn" onClick={goBack}>
+                                    🔙 Back
+                                </button>
+                            )}
+                        </div>
                         <div className="zoom-wrapper">
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key="root"
+                                    key={currentView}
                                     initial={{ scale: 0.92, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0.92, opacity: 0 }}
                                     transition={{ duration: 0.22 }}
                                 >
                                     <Grid
-                                        viewId="root"
-                                        items={views.root}
+                                        viewId={currentView}
+                                        items={views[currentView]}
                                         itemDimensions={itemDimensions}
+                                        onSquareDoubleClick={pushChildView}
                                         rowSize={ROW_SIZE}
-                                        onSquareDoubleClick={handleSquareDoubleClick}
                                     />
                                 </motion.div>
                             </AnimatePresence>

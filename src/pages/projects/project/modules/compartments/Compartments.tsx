@@ -9,154 +9,224 @@ import "../../../../../components/project/ProjectPage.css";
 
 import { useModule } from "../../../../../hooks/Moduleshooks/modules_hooks";
 import { useCompartment } from "../../../../../hooks/Compartmentshooks/compartments_hooks";
-import { useZones, useUpdateZone } from "../../../../../hooks/Zoneshooks/zones_hooks";
+import { useZones, useCreateZone, useUpdateZone } from "../../../../../hooks/Zoneshooks/zones_hooks";
+import { useCatalogsQuery } from "../../../../../hooks/Catalogshooks/catalogs_hooks";
 
 import { useParams, useNavigate } from "react-router-dom";
+import type { Zone } from "../../../../../types";
 
 const INITIAL_GRID = Array(12).fill(null);
 const ROW_SIZE = 4;
 
-type CompartmentsHrefIdTypization = {
+type ParamsType = {
     projectId: string;
     moduleId: string;
     compartmentId: string;
 };
 
+type CatalogItem = {
+    id: number;
+    name: string;
+    w: number;
+    h: number;
+    d?: number;
+    price?: number;
+    weight?: number;
+    photo?: string;
+};
+
 export default function Compartments() {
-    const { projectId, moduleId, compartmentId } = useParams<CompartmentsHrefIdTypization>();
+    const { projectId, moduleId, compartmentId } = useParams<ParamsType>();
     const navigate = useNavigate();
 
-    const projectPk = projectId ? Number(projectId) : undefined;
-    const modulePk = moduleId ? Number(moduleId) : undefined;
-    const compartmentPk = compartmentId ? Number(compartmentId) : undefined;
+    const projectPk = Number(projectId);
+    const modulePk = Number(moduleId);
+    const compartmentPk = Number(compartmentId);
 
-    const { data: compData } = useCompartment(projectPk as number, modulePk as number, compartmentPk as number);
-    const { data: moduleData } = useModule(projectPk as number, modulePk as number);
-    const { data: zonesData } = useZones(projectPk as number, modulePk as number, compartmentPk as number);
+    const { data: compData } = useCompartment(projectPk, modulePk, compartmentPk);
+    const { data: moduleData } = useModule(projectPk, modulePk);
+    const { data: zonesData } = useZones(projectPk, modulePk, compartmentPk);
+    const { data: catalogsData } = useCatalogsQuery();
 
-    const updateZone = useUpdateZone(projectPk as number, modulePk as number, compartmentPk as number);
+    const updateZone = useUpdateZone(projectPk, modulePk, compartmentPk);
+    const createZone = useCreateZone(projectPk, modulePk, compartmentPk);
 
-    const [views, setViews] = useState<Record<string, (string | null)[]>>({ root: [...INITIAL_GRID] });
+    const [views, setViews] = useState<Record<string, (any | null)[]>>({ root: [...INITIAL_GRID] });
     const [itemDimensions, setItemDimensions] = useState<Record<string, { width: number; height: number }>>({});
-    const [catalogItems, setCatalogItems] = useState<string[]>([]);
+    const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
     const [viewNames, setViewNames] = useState<Record<string, string>>({ root: "Compartment" });
 
-    // Инициализация каталога и сетки
+    // 🔹 Словарь catalogId -> фото
+    const catalogPhotoMap = catalogsData?.reduce<Record<number, string>>((acc, c) => {
+        if (c.type === "ZN") acc[c.id] = c.photo ?? "";
+        return acc;
+    }, {}) ?? {};
+
+    // Инициализация грида и каталога
     useEffect(() => {
-        if (!zonesData) return;
+        if (!zonesData || !catalogsData) return;
 
+        const newGrid: (any | null)[] = [...INITIAL_GRID];
         const dimensions: Record<string, { width: number; height: number }> = {};
-        const newGrid: (string | null)[] = [...INITIAL_GRID];
 
-        setCatalogItems(zonesData.filter(z => !z.x && !z.y).map(z => z.name));
-
-        for (const z of zonesData) {
-            dimensions[z.name] = { width: z.w, height: z.h };
+        zonesData.forEach(z => {
+            dimensions[z.id] = { width: z.w, height: z.h };
+            const photo = catalogPhotoMap[z.catalog] ?? "";
 
             if (z.x && z.y) {
                 const x0 = z.x - 1;
                 const y0 = z.y - 1;
                 for (let h = 0; h < z.h; h++) {
                     for (let w = 0; w < z.w; w++) {
-                        const index = (y0 + h) * ROW_SIZE + (x0 + w);
-                        if (index < newGrid.length && x0 + w < ROW_SIZE) newGrid[index] = z.name;
+                        const idx = (y0 + h) * ROW_SIZE + (x0 + w);
+                        if (idx < newGrid.length && x0 + w < ROW_SIZE) {
+                            newGrid[idx] = { ...z, serverId: z.id, photo };
+                        }
                     }
                 }
             }
-        }
+        });
 
-        setItemDimensions(prev => ({ ...prev, ...dimensions }));
+        const availableCatalogs: CatalogItem[] = catalogsData
+            .filter(c => c.type === "ZN")
+            .filter(c => !zonesData.some(z => z.catalog === c.id))
+            .map(c => ({
+                id: c.id,
+                name: c.name,
+                w: c.w,
+                h: c.h,
+                d: c.d ?? 1,
+                price: c.price ?? 0,
+                weight: c.weight ?? 0,
+                photo: c.photo ?? "",
+            }));
+
+        setItemDimensions(dimensions);
         setViews({ root: newGrid });
-    }, [zonesData]);
+        setCatalogItems(availableCatalogs);
+    }, [zonesData, catalogsData]);
 
-    // Обновление navbar title
     useEffect(() => {
         if (compData?.name) setViewNames(prev => ({ ...prev, root: compData.name }));
     }, [compData]);
 
-    function handleZoneDoubleClick(index: number) {
-        const label = views.root[index];
-        if (!label) return;
-        const zone = zonesData?.find(z => z.name === label);
-        if (!zone) return;
+    const handleZoneDoubleClick = (index: number) => {
+        const zoneObj = views.root[index];
+        if (!zoneObj || !zoneObj.serverId) return;
+        navigate(`/projects/${projectPk}/modules/${modulePk}/compartments/${compartmentPk}/zones/${zoneObj.serverId}`);
+    };
 
-        navigate(
-            `/projects/${projectPk}/modules/${modulePk}/compartments/${compartmentPk}/zones/${zone.id}`
-        );
-    }
-
-    function handleDragEnd(event: any) {
+    const handleDragEnd = (event: any) => {
         const { active, over } = event;
+        if (!active || !over) return;
+
         const activeData = active?.data?.current ?? {};
-        const label = activeData.label ?? active?.id;
-        const fromGrid = activeData.fromGrid;
+        let zoneId: number | undefined;
+        let catalogId: number | undefined;
 
-        const overId: string | undefined = over?.id;
+        if (activeData.item?.serverId) zoneId = activeData.item.serverId;
+        else if (activeData.item?.id) catalogId = activeData.item.id;
+
+        const zoneData = zonesData?.find(z => z.id === zoneId);
+        const catalogData = catalogItems.find(c => c.id === catalogId);
+
+        if (!zoneData && !catalogData) return;
+
+        const overId = over?.id;
         const destMatch = overId ? overId.match(/^(.+)-square-(\d+)$/) : null;
-        const destView = destMatch ? destMatch[1] : undefined;
         const destIndex = destMatch ? Number(destMatch[2]) : undefined;
+        const colStart = destIndex !== undefined ? destIndex % ROW_SIZE : 0;
+        const rowStart = destIndex !== undefined ? Math.floor(destIndex / ROW_SIZE) : 0;
 
-        const { width = 1, height = 1 } = itemDimensions[label] || {};
-        const zone = zonesData?.find(z => z.name === label);
-        if (!zone) return;
+        const width = zoneData?.w ?? catalogData?.w ?? 1;
+        const height = zoneData?.h ?? catalogData?.h ?? 1;
+        const photo = zoneData?.photo ?? catalogData?.photo ?? "";
 
-        setViews(prev => {
-            const copy = { ...prev };
+        // --- Новая зона из каталога ---
+        if (!zoneData && catalogData && destIndex !== undefined) {
+            const payload: Zone = {
+                w: width,
+                h: height,
+                d: catalogData.d ?? 1,
+                name: catalogData.name ?? "Zone",
+                price: catalogData.price ?? 0,
+                weight: catalogData.weight ?? 0,
+                x: colStart + 1,
+                y: rowStart + 1,
+                z: 0,
+                catalog: catalogData.id,
+                project: projectPk,
+                compartment: compartmentPk,
+            };
 
-            // Удаляем старый блок
-            const srcArr = [...(copy.root ?? [])];
-            for (let i = 0; i < srcArr.length; i++) {
-                if (srcArr[i] === label) srcArr[i] = null;
-            }
-            copy.root = srcArr;
+            createZone.mutate(payload, {
+                onSuccess: created => {
+                    setViews(prev => {
+                        const newGrid = [...(prev.root ?? [])];
+                        for (let h = 0; h < height; h++) {
+                            const rowOffset = (rowStart + h) * ROW_SIZE;
+                            for (let w = 0; w < width; w++) {
+                                const idx = rowOffset + colStart + w;
+                                if (idx < newGrid.length) {
+                                    newGrid[idx] = { ...created, serverId: created.id, photo };
+                                }
+                            }
+                        }
+                        return { ...prev, root: newGrid };
+                    });
+                    setCatalogItems(prev => prev.filter(c => c.id !== catalogData.id));
+                },
+            });
+            return;
+        }
 
-            // Выкинули за пределы → каталог
-            if (!destView || typeof destIndex !== "number") {
-                if (fromGrid) setCatalogItems(prev => (prev.includes(label) ? prev : [...prev, label]));
-                updateZone.mutate({ id: zone.id, data: { ...zone, x: 0, y: 0 } });
-                return copy;
-            }
+        // --- Существующая зона ---
+        if (zoneData && destIndex !== undefined) {
+            setViews(prev => {
+                const copy = { ...prev };
+                const gridArr = [...(copy.root ?? [])];
 
-            const destArr = [...(copy[destView] ?? Array(12).fill(null))];
+                gridArr.forEach((cell, idx) => {
+                    if (cell?.serverId === zoneData.id) gridArr[idx] = null;
+                });
 
-            // Определяем верхний левый квадрат блока
-            const colStart = destIndex % ROW_SIZE;
-            const rowStart = Math.floor(destIndex / ROW_SIZE);
+                let fits = true;
+                for (let h = 0; h < height; h++) {
+                    const rowOffset = (rowStart + h) * ROW_SIZE;
+                    for (let w = 0; w < width; w++) {
+                        const idx = rowOffset + colStart + w;
+                        if (colStart + w >= ROW_SIZE || idx >= gridArr.length || (gridArr[idx] !== null && gridArr[idx]?.serverId !== zoneData.id)) {
+                            fits = false;
+                            break;
+                        }
+                    }
+                    if (!fits) break;
+                }
 
-            // Проверка, что блок влезает и клетки пустые
-            let fits = true;
-            for (let h = 0; h < height; h++) {
-                const rowOffset = (rowStart + h) * ROW_SIZE;
-                for (let w = 0; w < width; w++) {
-                    const idx = rowOffset + colStart + w;
-                    if (colStart + w >= ROW_SIZE || idx >= destArr.length || destArr[idx] !== null) {
-                        fits = false;
-                        break;
+                if (!fits) {
+                    for (let i = 0; i < gridArr.length; i++) {
+                        if (views.root[i]?.serverId === zoneData.id) gridArr[i] = { ...zoneData, serverId: zoneData.id, photo };
+                    }
+                    return { ...copy, root: gridArr };
+                }
+
+                for (let h = 0; h < height; h++) {
+                    const rowOffset = (rowStart + h) * ROW_SIZE;
+                    for (let w = 0; w < width; w++) {
+                        const idx = rowOffset + colStart + w;
+                        if (idx < gridArr.length) {
+                            gridArr[idx] = { ...zoneData, serverId: zoneData.id, photo };
+                        }
                     }
                 }
-                if (!fits) break;
-            }
-            if (!fits) return prev;
 
-            // Заполняем сетку
-            for (let h = 0; h < height; h++) {
-                const rowOffset = (rowStart + h) * ROW_SIZE;
-                for (let w = 0; w < width; w++) {
-                    destArr[rowOffset + colStart + w] = label;
-                }
-            }
-            copy[destView] = destArr;
+                updateZone.mutate({ id: zoneData.id, data: { ...zoneData, x: colStart + 1, y: rowStart + 1 } });
 
-            // Удаляем из каталога
-            if (!fromGrid) setCatalogItems(prev => prev.filter(i => i !== label));
-
-            // Сохраняем позицию
-            updateZone.mutate({ id: zone.id, data: { ...zone, x: colStart + 1, y: rowStart + 1 } });
-
-            return copy;
-        });
-    }
-
+                copy.root = gridArr;
+                return copy;
+            });
+        }
+    };
 
     return (
         <div className="project__content_container">
@@ -165,14 +235,14 @@ export default function Compartments() {
                 prevName={moduleData?.name}
                 onBackClick={() => navigate(`/projects/${projectPk}/modules/${modulePk}`)}
             />
-
             <div className="project__content_main">
                 <DndContext onDragEnd={handleDragEnd} collisionDetection={rectIntersection}>
                     <Catalog
                         items={catalogItems}
                         firstButton="Зони"
                         selectedFilter="Зони"
-                        onFilterChange={() => { }}
+                        keyExtractor={item => item.id}
+                        onFilterChange={() => {}}
                     />
                     <div className="main__content">
                         <div className="zoom-wrapper">
@@ -188,7 +258,7 @@ export default function Compartments() {
                                         viewId="root"
                                         items={views.root}
                                         itemDimensions={itemDimensions}
-                                        rowSize={ROW_SIZE} // <-- передаём ROW_SIZE сюда
+                                        rowSize={ROW_SIZE}
                                         onSquareDoubleClick={handleZoneDoubleClick}
                                     />
                                 </motion.div>

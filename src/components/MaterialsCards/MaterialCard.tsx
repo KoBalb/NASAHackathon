@@ -32,8 +32,8 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ material, children }) => {
       </div>
 
       <div className="material-actions">
-        <button className="material-btn edit"></button>
-        <button className="material-btn delete" onClick={handleDelete}></button>
+        <button className="material-btn edit">⚙️</button>
+        <button className="material-btn delete" onClick={handleDelete}>🗑️</button>
       </div>
     </div>
   );
