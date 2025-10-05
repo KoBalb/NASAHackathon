@@ -1,14 +1,15 @@
 import "./Navbar.css"
-
-import settingsIcon from "../../../assets/icons/settings_icon.svg"
+import settingsIcon from "../../../assets/icons/settings_icon.svg";
 
 type NavProps = {
   topName?: string;
   prevName?: string;
   onBackClick?: () => void;
+  onOpenResources?: () => void; // 👈 добавили
 };
 
-export default function Navbar({ topName, prevName, onBackClick }: NavProps) {
+export default function Navbar({ topName, prevName, onBackClick, onOpenResources }: NavProps) {
+  
   return (
     <nav className="project__navbar_container">
       <button className="navbar__start_btn" onClick={onBackClick}>
@@ -18,7 +19,7 @@ export default function Navbar({ topName, prevName, onBackClick }: NavProps) {
       <p className="navbar__project_text">{topName}</p>
 
       <div className="navbar__right_container">
-        <button className="navbar__right_btn">
+        <button className="navbar__right_btn" onClick={onOpenResources}>
           <p className="navbar__right_text">Ресурси</p>
         </button>
         <button className="navbar__right_btn">
@@ -28,6 +29,7 @@ export default function Navbar({ topName, prevName, onBackClick }: NavProps) {
           <img className="navbar__right_settings_icon" src={settingsIcon} alt="settings icon" />
         </button>
       </div>
+
     </nav>
   );
 }

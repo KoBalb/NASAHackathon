@@ -13,10 +13,12 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 import { useEffect } from "react";
+import MaterialModal from "../../../wrappers/resourceListModal";
 
 const INITIAL_GRID = Array(12).fill(null);
 
 export default function Project() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -124,8 +126,9 @@ export default function Project() {
       <Navbar
         topName={projectData?.name}
         prevName={prevView ? viewNames[prevView] : undefined}
-        onBackClick={goBack}
+        onBackClick={goBack} onOpenResources={() => setIsModalOpen(true)}
       />
+      {isModalOpen && <MaterialModal onClose={() => setIsModalOpen(false)} />}
       <div className="project__content_main">
         <DndContext onDragEnd={handleDragEnd}>
           <Catalog
@@ -137,6 +140,7 @@ export default function Project() {
             <div className="zoom-toolbar">
               {viewStack.length > 1 && <button className="project__back_btn" onClick={goBack}>🔙 Back</button>}
             </div>
+            
 
             <div className="zoom-wrapper">
               <AnimatePresence mode="wait">

@@ -1,0 +1,68 @@
+.material-card {
+  width: 230px;
+  height: 120px;
+  background: #5b6670;
+  border-radius: 10px;
+  color: white;
+  font-family: "Monterchi-Sans", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 15px;
+  transition: transform 0.2s ease;
+}
+
+.material-card:hover {
+  transform: scale(1.05);
+  background: #6c7986;
+}
+
+.material-icon img {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
+}
+
+.material-info h3 {
+  font-size: 14pt;
+  margin: 0;
+}
+
+.material-info p {
+  font-size: 11pt;
+  margin: 2px 0 0;
+  opacity: 0.8;
+}
+
+.material-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.material-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid rgb(255, 0, 0);
+  background: rgba(255, 255, 255, 0.05);
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.material-btn.edit {
+  border-color: white;
+  background-image: url("../../images/wrench.png");
+}
+
+.material-btn.delete {
+  border-color: red;
+  background-image: url("../../images/deleteProject.png");
+}
+
+.material-btn:hover {
+  transform: scale(1.1);
+}
