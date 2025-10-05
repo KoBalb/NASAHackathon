@@ -1,4 +1,3 @@
-// Modules.tsx
 import { DndContext, rectIntersection } from "@dnd-kit/core";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -33,7 +32,6 @@ export default function Modules() {
     const [selectedFilter, setSelectedFilter] = useState("Відсіки");
     const [availableCompartments, setAvailableCompartments] = useState<any[]>([]);
     const [viewStack] = useState<string[]>(["root"]);
-    const [viewNames] = useState<Record<string, string>>({ root: "Module Builder" });
 
     const navigate = useNavigate();
     const { projectId, moduleId } = useParams<{ projectId: string; moduleId: string }>();
@@ -41,67 +39,48 @@ export default function Modules() {
     const projectPk = Number(projectId);
     const modulePk = Number(moduleId);
 
-    const { data: compartmentsData } = useCompartments(projectPk as number, modulePk as number);
-    const { data: moduleData } = useModule(projectPk as number, modulePk as number);
-    const { data: projectData } = useProject(projectPk as number);
+    const { data: compartmentsData } = useCompartments(projectPk, modulePk);
+    const { data: moduleData } = useModule(projectPk, modulePk);
+    const { data: projectData } = useProject(projectPk);
     const { data: catalogsData } = useCatalogsQuery();
 
-    const { mutate: createCompartment } = useCreateCompartment(projectPk as number, modulePk as number);
-    const { mutate: updateCompartment } = useUpdateCompartment(projectPk as number, modulePk as number);
-    const { mutate: deleteCompartment } = useDeleteCompartment(projectPk as number, modulePk as number);
+    const { mutate: createCompartment } = useCreateCompartment(projectPk, modulePk);
+    const { mutate: updateCompartment } = useUpdateCompartment(projectPk, modulePk);
+    const { mutate: deleteCompartment } = useDeleteCompartment(projectPk, modulePk);
+
+    // 🔹 Мапа catalogId -> photo
+    const catalogPhotoMap = catalogsData?.reduce<Record<number, string>>((acc, c) => {
+        if (c.type === "CM") acc[c.id] = c.photo ?? "";
+        return acc;
+    }, {}) ?? {};
 
     useEffect(() => {
         if (!compartmentsData) return;
 
-        console.log("==== useEffect triggered ====");
-        console.log("projectPk:", projectPk);
-        console.log("modulePk:", modulePk);
-        console.log("compartmentsData:", compartmentsData);
-        console.log("catalogsData:", catalogsData);
-
-        // 🔹 Берем все компартменты, без фильтрации по модулю
-        const moduleCompartments = compartmentsData;
-
-        console.log("Using all compartments:", moduleCompartments);
-
         const newGrid: (any | null)[] = Array(
-            Math.max(INITIAL_GRID.length, moduleCompartments.length * ROW_SIZE)
+            Math.max(INITIAL_GRID.length, compartmentsData.length * ROW_SIZE)
         ).fill(null);
 
         const dimensions: Record<string, { width: number; height: number }> = {};
 
-        moduleCompartments.forEach((item) => {
-            // используем id вместо name, чтобы не перезаписывались размеры одинаковых имён
+        compartmentsData.forEach((item) => {
             dimensions[item.id] = { width: item.w ?? 1, height: item.h ?? 1 };
 
-            console.log(
-                `Placing compartment ${item.id} (${item.name}) at x:${item.x}, y:${item.y}`
-            );
+            const photo = catalogPhotoMap[item.catalog] ?? "";
 
             if (item.x != null && item.y != null) {
                 const index = (item.y - 1) * ROW_SIZE + (item.x - 1);
-                console.log("Calculated grid index:", index);
-                newGrid[index] = { ...item, serverId: item.id };
-            } else {
-                console.warn("Compartment has no x/y:", item);
+                newGrid[index] = { ...item, serverId: item.id, photo };
             }
         });
-
-        console.log("Final grid:", newGrid);
 
         setItemDimensions(dimensions);
         setViews({ root: newGrid });
 
-        compartmentsData?.forEach((c) => {
-            console.log("Compartment raw:", c);
-        });
-
         const newAvailable =
             catalogsData?.filter(
-                (c) => c.type === "CM" && !moduleCompartments.some((m) => m.catalog === c.id)
-            ) ?? [];
-
-        console.log("Available compartments:", newAvailable);
+                (c) => c.type === "CM" && !compartmentsData.some((m) => m.catalog === c.id)
+            ).map(c => ({ ...c, photo: c.photo ?? "" })) ?? [];
 
         setAvailableCompartments(newAvailable);
     }, [compartmentsData, catalogsData]);
@@ -141,7 +120,6 @@ export default function Modules() {
 
         const droppedOutsideGrid = !over || !over.id.startsWith(`${currentView}-square-`);
 
-        // === Удаление из грида (выброс за пределы) ===
         if (droppedOutsideGrid) {
             if (item.serverId) {
                 deleteCompartment(item.serverId, {
@@ -152,9 +130,8 @@ export default function Modules() {
                                 if (grid[i]?.serverId === item.serverId) grid[i] = null;
                             return { ...prev, [currentView]: grid };
                         });
-                        addToAvailableCompartments({ ...item, id: item.catalog });
+                        addToAvailableCompartments({ ...item, id: item.catalog, photo: catalogPhotoMap[item.catalog] });
                     },
-                    onError: err => console.error("❌ Failed to delete compartment:", err),
                 });
             } else {
                 addToAvailableCompartments(item);
@@ -162,7 +139,7 @@ export default function Modules() {
             return;
         }
 
-        // === Новый отсек из каталога ===
+        // Новый отсек из каталога
         if (!item.serverId) {
             const payload = {
                 w: item.w ?? 1,
@@ -180,39 +157,33 @@ export default function Modules() {
                 module: modulePk,
             };
 
+            const photo = catalogPhotoMap[item.id] ?? "";
+
             createCompartment(payload, {
                 onSuccess: createdItem => {
-                    if (!createdItem.id) return console.error("Server did not return id!");
-                    const newItem = { ...createdItem, serverId: createdItem.id, module: modulePk };
+                    if (!createdItem.id) return;
+                    const newItem = { ...createdItem, serverId: createdItem.id, photo, module: modulePk };
                     setViews(prev => {
                         const grid = [...prev[currentView]];
-                        while (destIndex !== null && grid.length <= destIndex) grid.push(null);
                         if (destIndex !== null) grid[destIndex] = newItem;
                         return { ...prev, [currentView]: grid };
                     });
                     setAvailableCompartments(prev => prev.filter(i => i.id !== item.id));
                 },
-                onError: err => console.error("❌ Failed to create compartment:", err),
             });
             return;
         }
 
-        // === Перемещение существующего отсека внутри грида ===
+        // Перемещение существующего отсека
         if (item.serverId) {
-            // Обновляем грид сразу локально
             setViews(prev => {
                 const grid = [...prev[currentView]];
                 for (let i = 0; i < grid.length; i++) if (grid[i]?.serverId === item.serverId) grid[i] = null;
-                while (destIndex !== null && grid.length <= destIndex) grid.push(null);
                 if (destIndex !== null) grid[destIndex] = { ...item, x: col, y: row };
                 return { ...prev, [currentView]: grid };
             });
 
-            // Отправляем PATCH на сервер
-            updateCompartment({ id: item.serverId, data: { ...item, x: col, y: row } }, {
-                onSuccess: res => console.log("✅ Compartment updated:", res),
-                onError: err => console.error("❌ Failed to update compartment:", err),
-            });
+            updateCompartment({ id: item.serverId, data: { ...item, x: col, y: row } });
         }
     };
 

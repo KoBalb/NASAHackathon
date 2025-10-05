@@ -1,7 +1,7 @@
-// Project.tsx
 import { DndContext, rectIntersection } from "@dnd-kit/core";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+
 import Navbar from "../../../components/project/Navbar/Navbar";
 import Catalog from "../../../components/project/Catalog/Catalog";
 import Grid from "../../../components/project/Grid/Grid";
@@ -45,19 +45,32 @@ export default function Project() {
   const { mutate: createModule } = useCreateModule(id as number);
   const { mutate: deleteModule } = useDeleteModule(id as number);
 
+  // Создаем мапу catalogId -> photo
+  const catalogPhotoMap = catalogsData?.reduce<Record<number, string>>((acc, c) => {
+    if (c.type === "MO") acc[c.id] = c.photo ?? "";
+    return acc;
+  }, {}) ?? {};
+
+  // Initialize grid and available modules
   useEffect(() => {
     const newGrid: (any | null)[] = [...INITIAL_GRID];
     const dimensions: Record<string, { width: number; height: number }> = {};
 
     modulesData?.forEach(item => {
-      dimensions[item.name] = { width: item.w ?? 1, height: item.h ?? 1 };
+      const dim = { width: item.w ?? 1, height: item.h ?? 1 };
+      dimensions[item.name] = dim;
+
+      const photo = catalogPhotoMap[item.catalog] ?? "";
+
       if (item.x != null && item.y != null) {
         const x0 = item.x - 1;
         const y0 = item.y - 1;
-        for (let h = 0; h < (item.h ?? 1); h++) {
-          for (let w = 0; w < (item.w ?? 1); w++) {
+        for (let h = 0; h < dim.height; h++) {
+          for (let w = 0; w < dim.width; w++) {
             const index = (y0 + h) * ROW_SIZE + (x0 + w);
-            if (index < newGrid.length) newGrid[index] = { ...item, serverId: item.id };
+            if (index < newGrid.length) {
+              newGrid[index] = { ...item, serverId: item.id, photo };
+            }
           }
         }
       }
@@ -66,10 +79,11 @@ export default function Project() {
     setItemDimensions(dimensions);
     setViews({ root: newGrid });
 
+    // Available modules with photos
     setAvailableModules(
       catalogsData
         ?.filter(c => c.type === "MO" && !modulesData?.some(m => m.catalog === c.id))
-        ?? []
+        .map(c => ({ ...c, photo: c.photo ?? "" })) ?? []
     );
   }, [modulesData, catalogsData]);
 
@@ -91,12 +105,10 @@ export default function Project() {
   };
 
   const handleDragStart = () => {
-    // Блокируем прокрутку страницы при начале drag
     document.body.style.overflow = "hidden";
   };
 
   const handleDragEnd = (event: any) => {
-    // Разблокируем прокрутку после drag
     document.body.style.overflow = "";
 
     const { active, over } = event;
@@ -112,7 +124,7 @@ export default function Project() {
 
     const droppedOutsideGrid = !over || !over.id.startsWith(`${currentView}-square-`);
 
-    // Перетаскивание за пределы грида
+    // Dropped outside grid
     if (droppedOutsideGrid) {
       if (item.serverId) {
         deleteModule(item.serverId, {
@@ -123,7 +135,7 @@ export default function Project() {
                 if (grid[i]?.serverId === item.serverId) grid[i] = null;
               return { ...prev, [currentView]: grid };
             });
-            addToAvailableModules({ ...item, id: item.catalog });
+            addToAvailableModules({ ...item, id: item.catalog, photo: catalogPhotoMap[item.catalog] });
           },
           onError: err => console.error("Failed to delete module:", err)
         });
@@ -133,7 +145,7 @@ export default function Project() {
       return;
     }
 
-    // Новый модуль из каталога
+    // New module from catalog
     if (!item.serverId) {
       const payload = {
         orient: item.orient ?? 0,
@@ -149,25 +161,30 @@ export default function Project() {
         project: id
       };
 
+      const photo = catalogPhotoMap[item.id] ?? "";
+
       createModule(payload, {
         onSuccess: createdItem => {
-          if (!createdItem.id) {
-            console.error("Server did not return module id!");
-            return;
-          }
+          if (!createdItem.id) return;
           setViews(prev => {
             const grid = [...prev[currentView]];
-            if (destIndex !== null) grid[destIndex] = { ...createdItem, serverId: createdItem.id };
+            for (let h = 0; h < (item.h ?? 1); h++) {
+              for (let w = 0; w < (item.w ?? 1); w++) {
+                const index = (row! - 1 + h) * ROW_SIZE + (col! - 1 + w);
+                if (index < grid.length) {
+                  grid[index] = { ...createdItem, serverId: createdItem.id, photo };
+                }
+              }
+            }
             return { ...prev, [currentView]: grid };
           });
           setAvailableModules(prev => prev.filter(i => i.id !== item.id));
         },
-        onError: err => console.error("Failed to create module:", err)
       });
       return;
     }
 
-    // Перемещение существующего модуля внутри грида
+    // Move existing module inside grid
     if (item.serverId) {
       setViews(prev => {
         const grid = [...prev[currentView]];
@@ -187,10 +204,7 @@ export default function Project() {
   return (
     <div className="project__content_container">
       {settingsOpen && id && (
-        <ProjectWrapper
-          projectId={String(id)}
-          onClose={() => setSettingsOpen(false)}
-        />
+        <ProjectWrapper projectId={String(id)} onClose={() => setSettingsOpen(false)} />
       )}
       <Navbar
         topName={projectData?.name}

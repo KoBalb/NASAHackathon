@@ -33,7 +33,7 @@ function CatalogItem({ item }: { item: CatalogItemType }) {
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      <GridItem label={item.name} />
+      <GridItem label={item.name} photo={item.photo} />
     </div>
   );
 }
