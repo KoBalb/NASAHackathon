@@ -11,9 +11,9 @@ type CardProps = {
 function CatalogCard({ teg, children }: CardProps) {
   
   return (
-      <div className="prjct-card">
+      <div className="catalog-card">
             <div
-              className="card-image"
+              className="catalog-card-image"
               style={{ cursor: "pointer" }}
             >
               <img src={projectIcon} alt="preview"/>
