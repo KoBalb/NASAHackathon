@@ -1,0 +1,89 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-window {
+  background: #f7f9fc;
+  border-radius: 8px;
+  width: 450px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-body {
+  margin-bottom: 15px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.section {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.section-header {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.green {
+  color: green;
+}
+.yellow {
+  color: goldenrod;
+}
+.red {
+  color: crimson;
+}
+
+.modal-footer {
+  text-align: right;
+}
+
+.tabs button {
+  padding: 6px 12px;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: #ccc;
+  font-weight: bold;
+}
+
+.console-output {
+  background: #111;
+  color: #f55;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+}
