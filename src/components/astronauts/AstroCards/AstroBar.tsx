@@ -7,23 +7,24 @@ import PersonModal from "../../AstronautsForm/personformmodal";
 function AstroBar() {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeCosmation, setActiveCosmation] = useState(null);
+
   return (
     <div className="astro-card-container">
       <CreateAstroCard
         onClick={() => {
-          setModalOpen(true);
+          setModalOpen(true); // открываем модалку
+          setActiveCosmation(null); // создаём нового космонавта
         }}
       />
 
       <AstronautCard>піб 1</AstronautCard>
       <AstronautCard>Артем</AstronautCard>
       <AstronautCard>Мамут</AstronautCard>
+
       {modalOpen && (
         <PersonModal
           existingPerson={activeCosmation}
-          closeModal={() => {
-            setModalOpen(false);
-          }}
+          onClose={() => setModalOpen(false)} // закрытие на крестик / фон / ESC
         />
       )}
     </div>

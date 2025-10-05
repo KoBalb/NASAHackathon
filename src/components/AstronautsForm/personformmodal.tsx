@@ -45,7 +45,7 @@ const PersonModal = ({ onClose, existingPerson }: PersonModalProps) => {
   const createMutation = useCreateDefaultResource(existingPerson?.id ?? 1);
   const updateMutation = useUpdateDefaultResource(existingPerson?.id ?? 1);
   const deleteMutation = useDeleteDefaultResource(existingPerson?.id ?? 1);
-  const { data: oldResources } = useDefaultResources(existingPerson?.id ?? 1);
+  const { data: oldResources = [] } = useDefaultResources(existingPerson?.id ?? 1);
 
   const editTable = async () => {
     const removed = oldResources.filter(
@@ -62,17 +62,9 @@ const PersonModal = ({ onClose, existingPerson }: PersonModalProps) => {
       return oldItem.teg !== newItem.teg || oldItem.value !== newItem.value;
     });
 
-    for (const item of removed) {
-      deleteMutation.mutate(item);
-    }
-
-    for (const item of added) {
-      createMutation.mutate(item);
-    }
-
-    for (const item of changed) {
-      updateMutation.mutate(item);
-    }
+    for (const item of removed) deleteMutation.mutate(item);
+    for (const item of added) createMutation.mutate(item);
+    for (const item of changed) updateMutation.mutate(item);
   };
 
   const createTable = () => {
@@ -88,6 +80,15 @@ const PersonModal = ({ onClose, existingPerson }: PersonModalProps) => {
       );
     }
   }, [existingPerson, setValue]);
+
+  // Закрытие по ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -124,38 +125,50 @@ const PersonModal = ({ onClose, existingPerson }: PersonModalProps) => {
   };
 
   return ReactDOM.createPortal(
-    <div className="modal-overlay">
-      <div className="modal">
+    <div
+      className="modal-overlay"
+      onClick={onClose} // клик по фону закрывает
+    >
+      <div
+        className="modal"
+        onClick={(e) => e.stopPropagation()} // блокируем закрытие при клике внутри окна
+      >
         <button className="modal-close" onClick={onClose}>
           ✕
         </button>
-        <form onSubmit={handleSubmit((data) => mutation.mutate(data))}>
-          <div className="form-group">
-            <label>Фото</label>
-            <div className="preview">
-              <img
-                src={preview || "/src/assets/placeholder.png"}
-                alt="preview"
-              />
-            </div>
-            <input
-              type="file"
-              accept="image/*"
-              {...register("photo")}
-              onChange={handleFileChange}
-            />
-          </div>
+<form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="form">
+  <div className="form-group">
+    <label>Фото</label>
+    <div className="preview">
+      <img
+        src={preview || "/src/assets/placeholder.png"}
+        alt="preview"
+      />
+    </div>
+    <input
+      type="file"
+      accept="image/*"
+      {...register("photo")}
+      onChange={handleFileChange}
+    />
+  </div>
 
-          <div className="form-group">
-            <label>ПІБ</label>
-            <input {...register("name", { required: true })} />
-            {errors.name && <p className="error">Поле ПІБ обязательно</p>}
-          </div>
-          <ResourceManager resources={resources} setResources={setResources} />
-          <button type="submit" disabled={mutation.isPending}>
-            {existingPerson ? "Редагувати" : "Створити"}
-          </button>
-        </form>
+  <div className="form-group">
+    <label>ПІБ</label>
+    <input {...register("name", { required: true })} />
+    {errors.name && <p className="error">Поле ПІБ обязательно</p>}
+  </div>
+
+  <div className="form-actions">
+    <button
+      type="submit"
+      disabled={mutation.isPending}
+      className="submit-btn"
+    >
+      {existingPerson ? "Редагувати" : "Створити"}
+    </button>
+  </div>
+</form>
       </div>
     </div>,
     document.body
