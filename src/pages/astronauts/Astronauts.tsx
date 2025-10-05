@@ -1,24 +1,16 @@
-import { useState } from "react";
-
-import ResourceManager from "../../components/resourcesCard/ResourcesCard";
-
+import NavigationBar from "../../components/general/NavBar";
+import AstroBar from "../../components/astronauts/AstroCards/AstroBar";
+import AstroSearchBar from "../../components/astronauts/AstroSearchBar/AstroSearchBar";
 
 function Astronauts() {
-        
-
-    const [modalOpen, setModalOpen] = useState(false);
-    return( <>
-      {/* <button onClick={() => setModalOpen(true)}>
-        Дasdddddddddddddddddd
-      </button>
-        
-      {modalOpen && (
-        <ResourceForm 
-          onClose={() => setModalOpen(false)} 
-        />
-      )} */}
-      <ResourceManager/>
-    </>
+  return (
+    <div className="home-page">
+      <NavigationBar />
+      <main>
+        <AstroSearchBar />
+        <AstroBar />
+      </main>
+    </div>
   );
 }
 export default Astronauts;

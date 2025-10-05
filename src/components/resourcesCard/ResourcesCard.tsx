@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 interface Resource {
   id: number;
@@ -8,9 +8,8 @@ interface Resource {
 }
 
 interface ResourceManagerProps {
-  onCreate?: (resource: Resource) => void;
-  onDelete?: (id: number) => void;
-  onEdit?: (resource: Resource) => void;
+  resources: Resource[];
+  setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
 }
 
 const resourceOptions = [
@@ -20,12 +19,9 @@ const resourceOptions = [
 ];
 
 const ResourceManager: React.FC<ResourceManagerProps> = ({
-  onCreate,
-  onDelete,
-  onEdit,
+  resources,
+  setResources,
 }) => {
-  const [resources, setResources] = useState<Resource[]>([]);
-
   const addResource = () => {
     const newRes: Resource = {
       id: Date.now(),
@@ -43,9 +39,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
     value: string | number | null
   ) => {
     setResources((prev) =>
-      prev.map((res) =>
-        res.id === id ? { ...res, [field]: value } : res
-      )
+      prev.map((res) => (res.id === id ? { ...res, [field]: value } : res))
     );
 
     const updated = resources.find((r) => r.id === id);
@@ -69,7 +63,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
         </button>
       </div>
 
-      {resources.map((res) => (
+      {(resources ?? []).map((res) => (
         <div key={res.id} className="resource-row">
           <select
             value={res.resourceId ?? ""}
@@ -99,10 +93,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({
             onChange={(e) => updateResource(res.id, "unit", e.target.value)}
           />
 
-          <button
-            className="delete-btn"
-            onClick={() => removeResource(res.id)}
-          >
+          <button className="delete-btn" onClick={() => removeResource(res.id)}>
             ✖
           </button>
         </div>
