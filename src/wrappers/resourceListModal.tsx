@@ -1,6 +1,6 @@
 import React from "react";
 import "./MaterialModalStyle.css";
-import { useUserMaterials } from "../hooks/Materialhooks/material_hooks";
+import { useUserResources } from "../hooks/Userresorcehooks/user_resource_hooks"; 
 import MaterialCard from "../components/MaterialsCards/MaterialCard";
 
 
@@ -9,11 +9,10 @@ interface MaterialModalProps {
 }
 
 const MaterialModal: React.FC<MaterialModalProps> = ({ onClose }) => {
-  const { data: materials, isLoading, error } = useUserMaterials();
+  const { data, isLoading, error } = useUserResources();
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
   
-
   return (
     <div className="material-modal-overlay" onClick={onClose}>
       <div className="material-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -23,11 +22,14 @@ const MaterialModal: React.FC<MaterialModalProps> = ({ onClose }) => {
         </div>
 
         <div className="material-card-container">
-          {materials?.map((m) => (
+          {data?.map((m) => (
             <MaterialCard key={m.id} material={m}>
               {m.name}
             </MaterialCard>
           ))}
+            <MaterialCard key={12} material={"Дерево"}>Вода</MaterialCard>
+            <MaterialCard key={13} material={"Дерево"}>Кисень</MaterialCard>
+
         </div>
       </div>
     </div>

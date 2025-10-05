@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 12px 15px;
+  padding: 5px;
   transition: transform 0.2s ease;
 }
 
@@ -20,12 +20,12 @@
 .material-icon img {
   width: 35px;
   height: 35px;
-  object-fit: contain;
 }
 
 .material-info h3 {
   font-size: 14pt;
   margin: 0;
+  height: 20px;
 }
 
 .material-info p {
@@ -55,12 +55,10 @@
 
 .material-btn.edit {
   border-color: white;
-  background-image: url("../../images/wrench.png");
 }
 
 .material-btn.delete {
   border-color: red;
-  background-image: url("../../images/deleteProject.png");
 }
 
 .material-btn:hover {
