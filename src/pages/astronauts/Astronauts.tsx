@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import AstroBar from "../../components/astronauts/AstroCards/AstroBar";
 import AstroSearchBar from "../../components/astronauts/AstroSearchBar/AstroSearchBar";
