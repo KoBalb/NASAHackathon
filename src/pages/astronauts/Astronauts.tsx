@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import ResourceForm from "../../components/ResourceForm/Resourceform";
+import ResourceManager from "../../components/resourcesCard/ResourcesCard";
 
 
 function Astronauts() {
@@ -8,7 +8,7 @@ function Astronauts() {
 
     const [modalOpen, setModalOpen] = useState(false);
     return( <>
-      <button onClick={() => setModalOpen(true)}>
+      {/* <button onClick={() => setModalOpen(true)}>
         Дasdddddddddddddddddd
       </button>
         
@@ -16,7 +16,8 @@ function Astronauts() {
         <ResourceForm 
           onClose={() => setModalOpen(false)} 
         />
-      )}
+      )} */}
+      <ResourceManager/>
     </>
   );
 }
