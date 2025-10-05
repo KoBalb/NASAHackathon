@@ -7,7 +7,7 @@ import { useCatalogsQuery } from "../../../hooks/Catalogshooks/catalogs_hooks";
 import CreateCatalogModal from "../../Catalogform/modal";
 
 function CatalogBar() {
-  const [modalOpen, setModalOpen] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingCatalog, setEditingCatalog] = useState<Catalog | null>(null);
 
   const { data: сatalogs, isLoading, error } = useCatalogsQuery();
