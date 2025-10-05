@@ -11,14 +11,20 @@ import Elessar from "../../components/images/Elessar.jpg";
 import Tatiana from "../../components/images/Tatiana.jpg";
 import Mois from "../../components/images/Mois.jpg";
 import Nekit from "../../components/images/Nekita.jpg";
+import { motion } from "framer-motion";
+
 
 function Home() {
     return (
         <div className="home-page">
             <NavigationBar />
             <main>
-                <Header>Створи свій космічний дім. Почни подорож до зірок вже зараз!</Header>
-                <StartBuildButton />
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }}>
+                  <Header>Створи свій космічний дім. Почни подорож до зірок вже зараз!</Header>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }}>
+                    <StartBuildButton />
+                </motion.div>
                 <Header>Як це працює?</Header>
                 <div className="des-card-container">
                     <DesriptionCard head="Конструюй" text="створи форму корабля у 2D-редакторі"></DesriptionCard>
