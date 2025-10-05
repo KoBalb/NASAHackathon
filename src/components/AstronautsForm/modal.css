@@ -14,7 +14,8 @@
   color: white;
   padding: 20px;
   border-radius: 12px;
-  width: 880px;
+  width: 100%;        /* занимает всю доступную ширину */
+  max-width: 500px;   /* но не больше 500px */
   position: relative;
 }
 
@@ -41,6 +42,8 @@
   flex-direction: column;
   gap: 5px;
 }
+
+/* отступ именно между file и текстовым инпутом */
 
 .form-group input {
   padding: 8px;
@@ -89,26 +92,6 @@
   font-size: 12px;
 }
 
-.submit-btn {
-  background: linear-gradient(
-    270deg,
-    rgba(148, 185, 255, 1) 0%,
-    rgba(205, 255, 216, 1) 100%
-  );
-  color: black;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.submit-btn:hover {
-  transform: scale(1.03);
-  opacity: 0.9;
-}
-
 .preview {
   width: 100%;
   margin-bottom: 10px;
@@ -117,71 +100,50 @@
 
 .preview img {
   max-width: 100%;
-  max-height: 200px;
+  max-height: 150px;
   border-radius: 8px;
   object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-close:focus {
   outline: none;       
 }
 
-/* Для двух колонок */
-.form-columns {
+/* Контейнер для кнопки */
+.form-actions {
   display: flex;
-  gap: 20px;
+  justify-content: center; /* центрируем кнопку */
+  margin-top: 10px;        /* отступ сверху */
 }
 
-.form-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.form-group textarea {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid white;
-  background: rgba(255, 255, 255, 0.2);
+.submit-btn {
+  background: linear-gradient(
+    270deg,
+    rgba(148, 185, 255, 1) 0%,
+    rgba(205, 255, 216, 1) 100%
+  );
   color: white;
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-group textarea::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.form-columns {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start; /* выравнивание по верхнему краю */
-}
-
-.form-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.form-columns {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-
-.preview {
-  width: 100%;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.preview img {
-  width: 100%;
-  max-height: 200px;
-  object-fit: cover;
+  padding: 10px 20px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  min-width: 200px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.submit-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
